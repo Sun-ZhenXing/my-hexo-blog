@@ -201,3 +201,21 @@ hexo deploy
 ```
 
 更多信息：[hexo 部署](https://hexo.io/docs/one-command-deployment.html)
+
+## 使用 git 和 GitHub Actions 管理项目
+
+### git 拉取
+
+```bash
+git pull origin main 
+```
+
+创建并提交请求：
+
+```bash
+git add .
+git commit -m "upload new"
+git push -u origin main 
+```
+
+如果此时已经部署了 GitHub Actions，那么此时会自动编译部署。
