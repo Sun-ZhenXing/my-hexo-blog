@@ -113,10 +113,13 @@ deploy:
 navbar:
   blog_title: 鸭梨的博客
 
-# 打字机
+# 主页
 index:
   post_url_target: _self
   banner_img: /img/default.jpg
+  banner_img_height: 80
+  banner_mask_alpha: 0.3
+  # 打字机
   slogan:
     enable: true
     text: 学习如何去学习
@@ -126,6 +129,38 @@ index:
       method: "GET"
       headers: {}
       keys: ["hitokoto"]
+
+# 归档页面
+archive:
+  banner_img: /img/default.jpg
+  banner_img_height: 80
+  banner_mask_alpha: 0.3
+
+# 分类页面
+category:
+  enable: true
+  banner_img: /img/default.jpg
+  banner_img_height: 80
+  banner_mask_alpha: 0.3
+
+# 标签页面
+tag:
+  enable: true
+  banner_img: /img/default.jpg
+  banner_img_height: 80
+  banner_mask_alpha: 0.3
+  tagcloud:
+    min_font: 15
+    max_font: 30
+    unit: px
+    start_color: "#BBBBEE"
+    end_color: "#337ab7"
+
+# 自定义页面
+page:
+  banner_img: /img/default.jpg
+  banner_img_height: 80
+  banner_mask_alpha: 0.3
 
 # 关于信息
 about:

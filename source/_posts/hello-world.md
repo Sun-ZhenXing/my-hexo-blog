@@ -1,6 +1,7 @@
 ---
 title: 博客配置指南
 math: true
+banner_img: /img/default.jpg
 categories:
   - META
 tags:
