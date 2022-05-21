@@ -18,7 +18,7 @@ tags:
 首先安装 hexo，确保你的电脑安装了 Node.js 和 npm：
 
 ```bash
-npm install -g hexo
+npm install -g hexo-cli
 ```
 
 然后初始化仓库：
