@@ -13,7 +13,7 @@ timezone: ''
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://alexsun.top
+url: http://blog.alexsun.top
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -203,4 +203,4 @@ static_prefix:
   mathjax: https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/
 
 # 如果网站是 HTTPS 改为 true
-force_https: false
+force_https: true
