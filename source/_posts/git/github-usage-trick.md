@@ -6,20 +6,19 @@ categories:
 tags:
   - GitHub
   - git
-  - 技巧
 ---
 
 本文介绍 GitHub 的各种小技巧。
 
 <!-- more -->
 
-## 1. 搜索技巧
+# 1. 搜索技巧
 
 GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快速技巧。如需更多信息，请访问 [搜索帮助](https://docs.github.com/articles/about-searching-on-github/) 。
 
 提示：按 `S` 可以快速搜索。
 
-### 1.1 基础搜索
+## 1.1 基础搜索
 
 | This search                        | Finds repositories with…                                  |
 | ---------------------------------- | --------------------------------------------------------- |
@@ -29,7 +28,7 @@ GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快�
 | `join extension:coffee`            | Find all instances of join in code with coffee extension. |
 | `NOT cat`                          | Excludes all results containing cat.                      |
 
-### 1.2 仓库搜索
+## 1.2 仓库搜索
 
 仓库搜索可以查看你在 GitHub 上可以访问的项目，你还可以过滤结果。
 
@@ -43,7 +42,7 @@ GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快�
 | `gitx fork:true`          | Repository search includes forks of gitx.                    |
 | `gitx fork:only`          | Repository search returns only forks of gitx.                |
 
-### 1.3 代码搜索
+## 1.3 代码搜索
 
 代码搜索查看 GitHub 上的文件，你也可以过滤结果。
 
@@ -56,7 +55,7 @@ GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快�
 | `examples path:/docs/`             | Find all examples in the path /docs/.                                          |
 | `replace fork:true`                | Search replace in the source code of forks.                                    |
 
-### 1.4 问题搜索
+## 1.4 问题搜索
 
 问题搜索可以查看 GitHub 上的问题和拉动请求，你还可以过滤结果。
 
@@ -72,7 +71,7 @@ GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快�
 | `exception created:>2012-12-31` | Created since the beginning of 2013.            |
 | `exception updated:<2013-01-01` | Last updated before 2013.                       |
 
-### 1.5 用户搜索
+## 1.5 用户搜索
 
 用户搜索可以找到在 GitHub 上有账户的用户，你还可以过滤结果。
 
@@ -83,7 +82,7 @@ GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快�
 | `chris followers:100..200`         | Find all chris users with followers between 100 and 200. |
 | `ryan repos:>10`                   | Find all ryan users with more than 10 repositories.      |
 
-## 2. 文件查找
+# 2. 文件查找
 
 快捷指令：
 - 按 `T` 可以快速查找文件
@@ -95,7 +94,7 @@ GitHub 的搜索支持各种不同的操作，下面是一些常见搜索的快�
 
 命令面板：按 `Ctrl + K`（或 `Command + K` 在 Mac 上）可以输入快捷命令。
 
-## 3. 阅读和运行项目
+# 3. 阅读和运行项目
 
 在仓库页面按 `.` 可以在一个在线版本的 VS Code 打开 GitHub 中的项目，可以安装插件来查看和编辑项目。
 
