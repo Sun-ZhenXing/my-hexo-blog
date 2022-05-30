@@ -1,5 +1,6 @@
 ---
 title: 博客配置指南
+date: 2022-05-20 16:51:35
 math: true
 banner_img: /img/default.jpg
 categories:
@@ -71,9 +72,9 @@ layout: about
 
 这里使用 KaTeX 引擎，原因是 MathJax 加载太慢，而且 Bug 比较多、渲染到页面上比较丑。
 
-KaTeX 引擎可以按照官方说明配置，但是修改一些配置，否则公式就不是很美观，最后查看源码发现上游依赖的插件版本比较老，是 KaTeX 0.10.2，于是将 CDN 版本全部退回到 0.10.2，而官方在用 0.15.3，渲染起来和预期差别很大。
+KaTeX 引擎可以按照官方说明配置，但是修改一些配置，否则公式就不是很美观，最后查看源码发现上游依赖的插件版本比较老，是 KaTeX `0.10.2`，于是将 CDN 版本全部退回到 `0.10.2`，而官方在用 `0.15.3`，渲染起来和预期差别很大。
 
-官方使用的 baomitu CDN 在加载字体的时候出现问题，所以就将 CDN 换为 bootcdn，这在国内也是很快速的。
+官方使用的 baomitu CDN 在加载字体的时候出现问题，所以就将 CDN 换为 staticfile，这在国内也是很快速的。
 
 ```bash
 # 卸载原有的渲染引擎，安装新的引擎
@@ -94,21 +95,12 @@ post:
     engine: katex
 
 static_prefix:
-  katex: https://cdn.bootcdn.net/ajax/libs/KaTeX/0.10.2/
+  katex: https://cdn.staticfile.org/KaTeX/0.10.2/
 ```
 
 在 `_config.yml` 中配置：
 
 ```yml
-math:
-  engine: katex
-  katex:
-    css: https://cdn.bootcdn.net/ajax/libs/KaTeX/0.10.2/katex.min.css
-    js: https://cdn.bootcdn.net/ajax/libs/KaTeX/0.10.2/katex.min.js
-    config:
-      throwOnError: false
-      errorColor: "#cc0000"
-
 markdown_it_plus:
   plugins:
     - plugin:

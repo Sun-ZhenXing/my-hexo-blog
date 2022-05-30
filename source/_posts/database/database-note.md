@@ -2,15 +2,14 @@
 title: 数据库系统概论笔记
 date: 2022-05-23 21:06:44
 categories:
-  - [数据库, MySQL]
+  - 数据库
 tags:
   - 数据库
   - SQL
-  - MySQL
 math: true
 ---
 
-本文是 [*拯救者：数据库系统概论速成*](https://www.bilibili.com/video/BV1jf4y147jz/) 课程笔记。
+本文是 [*拯救者：数据库系统概论速成*](https://www.bilibili.com/video/BV1jf4y147jz/) 课程笔记，另外文末还包含实验题的 SQL，测试试卷和答案。
 
 <!-- more -->
 
@@ -1461,3 +1460,612 @@ SQL 与主语言通信：
 - 先 $T_2$ 后 $T_1$ ： $A = 3,\,B = 4$
 
 如果这两种结果都是可接受的，那么它就是可串行的。
+
+# 附录 A：实验 SQL
+
+## 实验一
+
+创建一个名为 `StuDB` 的数据库，在该数据库下根据下列表格给出的内容创建四个表 `S`（学生）、`C`（课程表）、`SC`（选课关系表）、`Dept`（系部表）。
+
+`S` 表：
+
+| 字段名称 | 数据类型 | 主码  |    可空    | 默认值 |
+| :------: | :------: | :---: | :--------: | :----: |
+|  `Sno`   |  长整型  |   *   | `NOT NULL` |        |
+| `Sname`  |   文本   |       |   `NULL`   |        |
+|  `Sex`   |   文本   |       |   `NULL`   | `'男'` |
+|  `Age`   |  长整型  |       |   `NULL`   |        |
+| `Deptno` |  长整型  |       | `NOT NULL` |        |
+
+`C` 表：
+
+| 字段名称 | 数据类型 | 主码  |    可空    | 默认值 |
+| :------: | :------: | :---: | :--------: | :----: |
+|  `Cno`   |  长整型  |   *   | `NOT NULL` |        |
+| `Cname`  |   文本   |       |   `NULL`   |        |
+|  `Cpno`  |  长整型  |       |   `NULL`   |        |
+| `Credit` |  单精度  |       |   `NULL`   |        |
+
+`SC` 表：
+
+| 字段名称 | 数据类型 | 主码  |    可空    | 默认值 |
+| :------: | :------: | :---: | :--------: | :----: |
+|  `Sno`   |  长整型  |   *   | `NOT NULL` |        |
+|  `Cno`   |  长整型  |   *   | `NOT NULL` |        |
+| `Grade`  |  单精度  |       |   `NULL`   |        |
+
+`Dept` 表：
+
+|   字段名称   | 数据类型 | 主码  |    可空    | 默认值 |
+| :----------: | :------: | :---: | :--------: | :----: |
+|   `Deptno`   |  长整型  |   *   | `NOT NULL` |        |
+|  `Deptname`  |   文本   |       |   `NULL`   |        |
+| `Mastername` |   文本   |       |   `NULL`   |        |
+
+```sql
+-- 按照顺序创建下面四个表
+CREATE TABLE Dept (
+    Deptno BIGINT NOT NULL,
+    Deptname VARCHAR(30),
+    Mastername VARCHAR(30),
+    PRIMARY KEY (Deptno),
+);
+CREATE TABLE S (
+    Sno BIGINT PRIMARY KEY,
+    Sname VARCHAR(30),
+    Sex VARCHAR(2) DEFAULT '男',
+    Age BIGINT,
+    Deptno BIGINT NOT NULL,
+    FOREIGN KEY (Deptno) REFERENCES Dept(Deptno)
+);
+CREATE TABLE C (
+    Cno BIGINT PRIMARY KEY,
+    Cname VARCHAR(30),
+    Cpno BIGINT,
+    Credit FLOAT,
+    FOREIGN KEY (Cpno) REFERENCES C(Cno)
+);
+CREATE TABLE SC (
+    Sno BIGINT NOT NULL,
+    Cno BIGINT NOT NULL,
+    Grade FLOAT,
+    PRIMARY KEY (Sno, Cno),
+    FOREIGN KEY (Sno) REFERENCES S(Sno),
+    FOREIGN KEY (Cno) REFERENCES C(Cno)
+);
+```
+
+数据内容（`S` 表）：
+
+| `Sno`  | `Sname` | `Sex` | `Age` | `Deptno` |
+| ------ | ------- | ----- | ----- | -------- |
+| 991401 | 何丽    | 女    | 18    | 6        |
+| 992401 | 胡涛    | 男    | 20    | 5        |
+| 993401 | 马华    | 女    | 21    | 4        |
+| 993402 | 马吉    | 男    | 22    | 4        |
+| 994423 | 何小波  | 男    | 22    | 3        |
+| 994424 | 路敏    | 女    | 20    | 3        |
+| 995401 | 朱华    | 女    | 19    | 2        |
+| 995402 | 张立    | 女    | 18    | 2        |
+| 996401 | 李明    | 男    | 19    | 1        |
+| 996402 | 刘晨    | 男    | 22    | 1        |
+| 996403 | 张征    | 男    | 21    | 1        |
+
+数据内容（`SC` 表）：
+
+| `Sno`  | `Cno` | `Grade` |
+| ------ | ----- | ------- |
+| 991401 | 7     | 60      |
+| 992401 | 3     | 85      |
+| 992401 | 7     | 88      |
+| 993401 | 7     | 85      |
+| 993402 | 7     | 90      |
+| 994423 | 6     |         |
+| 994423 | 7     | 75      |
+| 994424 | 6     | 70      |
+| 994424 | 7     | 60      |
+| 995401 | 1     | 70      |
+| 995401 | 7     | 80      |
+| 995402 | 7     |         |
+| 996401 | 1     | 80      |
+| 996401 | 2     | 95      |
+| 996401 | 7     | 85      |
+| 996402 | 1     | 75      |
+| 996402 | 2     | 60      |
+| 996402 | 7     | 80      |
+| 996403 | 1     | 70      |
+| 996403 | 7     | 80      |
+
+数据内容（`C` 表）：
+
+| `Cno` | `Cname`      | `Cpno` | `Credit` |
+| ----- | ------------ | ------ | -------- |
+| 1     | 数据库原理   | 4      | 4        |
+| 2     | 计算数学     |        | 3        |
+| 3     | 管理信息系统 | 1      | 3        |
+| 4     | 数据结构     | 6      | 4        |
+| 5     | 操作系统     | 7      | 4        |
+| 6     | C语言        | 7      | 5        |
+| 7     | 计算机基础   |        | 3        |
+
+数据内容（`Dept` 表）：
+
+| `Deptno` | `Deptname` | `Mastername` |
+| -------- | ---------- | ------------ |
+| 1        | 计算机系   | 刘红         |
+| 2        | 信息系     | 李兰         |
+| 3        | 数学系     | 张华         |
+| 4        | 质量系     | 李兰         |
+| 5        | 经管系     | 李辉         |
+| 6        | 电气系     | 刘卫国       |
+| 7        | 语文系     | 许卫国       |
+
+## 实验二
+
+1.  用 SQL 语句创建一个新表 `S1`（表的结构与学生表 `S` 一致），要包含主键、外键（参照 `Dept` 表）和默认值的定义
+2.  使用 SQL 语句删除表 `S1`
+3.  将一个新学生记录 `(997401, '张小玉', '女', 20, 7)` 插入到学生表 `S` 中
+4.  往成绩表中增加一条记录 `(991401, 8, 100)`，发现什么问题，如何解决？
+5.  插入一条无成绩的选课记录 `(997401, 7)`
+6.  将学生 `997401` 的年龄改为 `22` 岁
+7.  将所有男学生的年龄增加一岁
+8.  删除学号为 `997401` 的学生记录
+9.  删除课程编号为 `7` 的课程记录
+10. 查询每门课程先修课的课程名（查询结果包括课程号，先修课课程号，先修课课程名）
+11. 查询年龄在 `19` 岁（含 `19` 岁）以上的学生记录
+12. 查询考试成绩为 `80`（含 `80` 分）分以上的成绩信息
+13. 查询全体女生的详细信息
+14. 查询 `1` 号系学生的选课信息
+15. 删除系部编号为 `1` 的系部信息，发现什么问题，如何解决？
+
+```sql
+-- 创建表 S1
+CREATE TABLE S1 (
+    Sno BIGINT PRIMARY KEY,
+    Sname VARCHAR(30),
+    Sex VARCHAR(2) DEFAULT '男',
+    Age BIGINT,
+    Deptno BIGINT NOT NULL,
+    FOREIGN KEY (Deptno) REFERENCES Dept(Deptno)
+);
+
+-- 删除表 S1
+DROP TABLE S1;
+
+-- 插入数据
+INSERT INTO S VALUES (997401, '张小玉', '女', 20, 7);
+
+-- 8 不在 SC 中
+INSERT INTO SC VALUES (991401, 8, 100);
+-- 解决方法：将 8 替换为 6
+INSERT INTO SC VALUES (991401, 6, 100);
+-- 或者插入一条到 C 表
+INSERT INTO C VALUES (8, '新课程', NULL, 3);
+
+-- 无成绩的记录
+INSERT INTO SC (Sno, Cno) VALUES (997401, 7);
+
+-- 更新
+UPDATE S SET Age = 22 WHERE Sno = 997401;
+
+-- 更新全部年龄
+UPDATE S SET Age = Age - 1;
+
+-- 删除学生记录
+DELETE FROM SC WHERE Sno = 997401;
+-- 去除约束
+DELETE FROM S WHERE Sno = 997401;
+
+-- 删除课程号
+UPDATE C SET Cpno = NULL WHERE Cpno = 7;
+DELETE FROM SC WHERE Cno = 7;
+-- 去除约束
+DELETE FROM C WHERE Cno = 7;
+
+-- 查询先修课程
+SELECT C.Cno, C.Cpno, (SELECT Cname FROM C as _C WHERE _C.Cno = C.Cpno) as CPName FROM C;
+
+-- 年龄查询
+SELECT * FROM S WHERE Age >= 19;
+
+-- 成绩查询
+SELECT * FROM SC WHERE Grade >= 80;
+
+-- 查询女生
+SELECT * FROM S WHERE Sex = '女';
+
+-- 1 号系学生选课信息
+SELECT S.Sno, SC.Cno FROM S, SC
+    WHERE S.Sno = SC.Sno and S.Deptno = 1;
+-- 或者
+SELECT S.Sno, SC.Cno FROM S
+    INNER JOIN SC ON S.Sno = SC.Sno
+    WHERE S.Deptno = 1;
+
+-- 与 S 约束冲突
+DELETE FROM Dept WHERE Deptno = 1;
+-- 解决办法：删除冲突的记录
+DELETE FROM SC WHERE Sno IN (SELECT Sno FROM S WHERE Deptno = 1);
+DELETE FROM S WHERE Deptno = 1;
+```
+
+## 实验三
+
+1.  查询 “计算机系” 学生的学号与姓名
+2.  查询年龄大于 `20` 岁的所有学生的信息
+3.  查询成绩小于 `80` 分的学生学号、姓名、课程名、成绩，并按学号升序、成绩将序排列
+4.  查询所有没有成绩的学生的学号
+5.  查询选修各门课程的学生的人数、平均成绩、最高分、最低分和总分
+6.  查询至少选修了两门以上课程的学生学号
+7.  查询所有姓 “张” 的学生的详细情况
+8.  查询每一门课程的先修课的先修课
+9.  查询选修 “数据库原理” 且成绩在 `70` 分以上的学生学号、姓名（分别用多表连接和嵌套查询完成）
+10. 查询计算机系没有选修 `7` 号课程的学生的学号和姓名
+11. 查询被所有学生都选修的课程名称
+12. 查询至少选修了学生 “张征” 选修的全部课程的学生的学号和姓名
+13. 查询学分大于 `4` 或等于 `3` 的课程的名称和学分（用 `union` 操作）
+14. 查询 “计算机系” 中比 “质量系” 所有学生年龄都小的学生姓名和年龄
+15. 查询 “计算机系” 选修 “数据库原理” 课程的学生姓名和成绩
+
+```sql
+-- 1
+SELECT Sno, Sname FROM S WHERE Deptno = (SELECT Deptno FROM Dept WHERE Deptname = '计算机系');
+
+-- 2
+SELECT * FROM S WHERE Age > 20;
+
+-- 3
+SELECT S.Sno, S.Sname, (
+    SELECT C.Cname FROM C WHERE C.Cno = SC.Cno)
+    AS Cname, SC.Grade
+FROM S, SC
+    WHERE SC.Grade < 80 AND S.Sno = SC.Sno
+    ORDER BY S.Sno ASC, SC.Grade DESC;
+
+-- 4
+SELECT DISTINCT Sno FROM SC WHERE Grade IS NULL;
+
+-- 5
+SELECT Cno, COUNT(Cno) AS NUMs, AVG(Grade) AS AVGs,
+    MAX(Grade) AS MAXs, MIN(Grade) AS MINs
+FROM SC
+    GROUP BY Cno;
+
+-- 6
+SELECT Sno, COUNT(Sno) AS NUMs FROM SC
+    GROUP BY Sno HAVING COUNT(Sno) >= 2;
+
+-- 7
+SELECT * FROM S WHERE Sname LIKE '张%';
+
+-- 8
+SELECT Cno, Cpno, (
+    SELECT _C.Cpno FROM C AS _C WHERE _C.Cno = C.Cpno) AS Ppno FROM C;
+
+-- 9 嵌套查询
+SELECT Sno, (
+    SELECT Sname FROM S WHERE Sno = SC.Sno) AS Sname
+FROM SC
+    WHERE Grade > 70 AND Cno = (
+        SELECT Cno FROM C WHERE Cname = '数据库原理'
+        );
+-- 9 多表连接
+SELECT S.Sno, S.Sname FROM S, SC
+    WHERE S.Sno = SC.Sno AND
+        SC.Grade > 70 AND
+        SC.Cno = (
+            SELECT Cno FROM C WHERE Cname = '数据库原理'
+        );
+
+-- 10
+SELECT Sno, Sname FROM S
+    WHERE Deptno = (SELECT Deptno FROM Dept WHERE Deptname = '计算机系') AND Sno NOT IN (
+        SELECT DISTINCT Sno FROM SC WHERE Cno = 7
+    );
+
+-- 11
+SELECT C.Cno, C.Cname FROM C WHERE C.Cno IN (
+    SELECT DISTINCT SC.Cno FROM SC GROUP BY SC.Cno
+    HAVING COUNT(*) = (
+        SELECT COUNT(*) FROM S
+    )
+);
+
+-- 12
+-- 解释为不存在一个课程 B，使得 “张征” 选择了而同学 A 没有选择
+SELECT DISTINCT Sno FROM SC AS A_SC
+WHERE NOT EXISTS (
+    SELECT * FROM SC AS B_SC WHERE B_SC.Sno = (
+        SELECT S.Sno FROM S WHERE S.Sname = '张征'
+    ) AND NOT EXISTS (
+        SELECT * FROM SC AS C_SC
+        WHERE C_SC.Cno = B_SC.Cno AND C_SC.Sno = A_SC.Sno
+    )
+);
+
+-- 13
+SELECT Cname, Credit FROM C WHERE Credit = 3 UNION
+    SELECT Cname, Credit FROM C WHERE Credit > 4;
+
+-- 14
+SELECT Sname, Age FROM S
+WHERE S.Deptno = (
+    SELECT Deptno FROM Dept
+    WHERE Deptname = '计算机系'
+) AND S.Age < ALL (
+    SELECT Age FROM S
+    WHERE Deptno = (
+        SELECT Deptno FROM Dept
+        WHERE Deptname = '质量系'
+    )
+);
+
+-- 15
+SELECT Sname, Grade FROM S, SC
+WHERE S.Sno = SC.Sno AND S.Deptno = (
+    SELECT Deptno FROM Dept
+    WHERE Deptname = '计算机系'
+) AND SC.Cno = (
+    SELECT Cno FROM C
+    WHERE Cname = '数据库原理'
+);
+```
+
+## 实验四
+
+1. 以 `SA` 身份登陆系统，创建数据库用户 `User1`，使用 `User1` 用户登录到数据库
+2. 使用超级用户登录到数据库，对 `User1` 用户进行授权，允许 `User1` 访问 `Student` 表，允许 `User1` 修改 `C` 表中 `Cname` 属性列。然后再使用 `User1` 用户登录到数据库，观察其访问权限
+3. 使用 SQL 语句完成一下操作：定义一新的登录帐号 `Hu`、数据库用户 `Hu`，并授予其访问学生表 `S` 的 `SELECT` 权限，授予其修改 `Sname` 的权限，使用 `Hu` 登录数据库，分别查询修改 `S` 表，观察执行结果。使用 `REVOKE` 命令回收 `Hu` 的相应权限，再次使用 `Hu` 登录数据库，分别查询修改 `S` 表，观察执行结果
+
+```sql
+-- 安全性
+-- 1. 以 SA 身份登陆系统，创建数据库用户 User1，使用 User1 用户登录到数据库
+CREATE DATABASE Stu20030839;
+CREATE LOGIN User1 WITH PASSWORD = '123456',
+    DEFAULT_DATABASE = Stu20030839;
+CREATE USER User1 FOR LOGIN User1;
+
+--2. 对 User1 用户进行授权
+--（1）允许 User1 访问 Student 表
+GRANT SELECT ON S TO User1;
+
+--（2）允许 User1 修改 C 表中 CNAME 属性列
+GRANT UPDATE ON C(Cname) TO User1;
+
+--（3）查看User1权限
+EXEC SP_HELPROTECT @USERNAME = 'User1';
+
+--查看所有用户
+EXEC SP_HELPUSER;
+
+--3. 使用 SQL 语句完成以下操作
+--（1）定义一新的登录帐号Hu
+CREATE LOGIN Hu WITH PASSWORD = '123456',
+    DEFAULT_DATABASE = Stu20030839;
+
+--（2）数据库用户 Hu
+CREATE USER Hu FOR LOGIN Hu;
+-- 可以加入 WITH DEFAULT_SCHEMA=dbo
+
+--（3）授予其访问学生表 S 的 Select 权限，授予其修改 Sname 的权限
+GRANT UPDATE(Sname), SELECT ON S TO Hu WITH GRANT OPTION;
+--检验：
+SELECT * FROM S WHERE Sno=992401
+    UPDATE S SET Sname='李明' FROM S WHERE Sno=996401;
+SELECT * FROM S;
+
+--（4）使用 REVOKE 命令回收 Hu 的相应权限
+REVOKE UPDATE(Sname), SELECT ON S FROM Hu CASCADE;
+
+--（5）查看 Hu 的权限
+EXEC SP_HELPROTECT @USERNAME = 'Hu';
+
+--完整性
+--1. 建立新表 S1
+CREATE TABLE S1 (
+    Sno BIGINT PRIMARY KEY NOT NULL,
+    Sname CHAR(10),
+    Sex CHAR(2) DEFAULT '男' CHECK(Sex IN ('男', '女')),
+    Age BIGINT CHECK(Age>18 AND Age < 60),
+    Deptno BIGINT NOT NULL FOREIGN KEY REFERENCES Dept(Deptno)
+);
+
+--2. 使用 SQL 语句分别往表 S1 中插入两条记录
+-- 其中一条记录年龄为 0 岁，另一条记录系部编号为 100，观察提示信息，并进行分析。
+INSERT INTO S1(Sno, Sname, Sex, Age, Deptno) VALUES (1, '张三', '男', 0, 1);
+INSERT INTO S1(Sno, Sname, Sex,Age,Deptno) VALUES (2, '李四', '男', 20, 100);
+
+-- 3. 如何向表 SC 中插入一条记录 (996409, 10, 80)
+INSERT INTO S(Sno,Deptno) VALUES(996409,1);
+INSERT INTO C(Cno) VALUES(10);
+INSERT INTO SC VALUES(996409,10,80);
+```
+
+# 附录 B：数据库复习试卷
+
+## 1. 简答题
+
+1. 举例说明数据完整性约束规则中的实体完整性约束，并说明在数据更新中的有关实体完整性约束的注意事项。
+2. 试述数据库系统的三级模式结构，并说明其优点。
+    - 三级结构：
+        1. 模式：也称逻辑模式，是数据库中全体数据的逻辑结构和特征的描述，是所有用户的公共数据视图。一个数据库只有一个模式，数据库管理系统提供模式数据定义语言（模式 DDL）来严格地定义模式
+        2. 外模式：也称子模式或用户模式，一个数据库可以有多个外模式，但是一个应用程序只能使用一个外模式。它是数据库用户能够看见和使用的局部数据的逻辑结构和特征的描述，是数据库用户的数据视图，是与某一应用有关的数据的逻辑表示。外模式是保证数据库安全性的一个有力措施，因为每个用户只能看见和访问所对应的外模式中的数据，数据库中的其余数据是不可见的。数据库管理系统提供外模式数据定义语言（外模式 DDL）来严格地定义模式
+        3. 内模式：也称存储模式，一个数据库只有一个内模式。它是数据物理结构和存放方式的描述，是数据在数据库内部的组织方式
+    - 优点：
+        - 数据库系统的三级模式是数据的三个抽象级别，它把数据的具体组织留给数据库系统管理，使用户能逻辑地、抽象地处理数据，而不必关心数据在计算机中的具体表现方式与存储方式。
+
+3. 数据库恢复的基本技术有哪些？
+    - 数据库恢复技术有：
+        1. 数据转储，即 DBA 定期将整个数据库复制到磁带或另一个磁盘上保存起来的过程
+        2. 登记日志文件，日志文件是用来记录事务对数据库的更新操作的文件，设立日志文件可以进行事务故障恢复、系统故障恢复、协助后备副本进行介质故障恢复
+
+4. 写出两个关系模式分别满足下面的要求，并说明理由：
+    1. 是 3NF 的关系模式
+    2. 是 3NF，也是BCNF 的关系模式
+
+5. 举例说明并发操作中的读脏数据的问题。
+    - 当两个事务 $T_1,\,T_2$ 并发时，事务 $T_1$ 修改某一数据，并将其写回磁盘，事务 $T_2$ 读取同一数据后，$T_1$ 由于某种原因回滚，这时 $T_1$ 已修改过的数据恢复原值，$T_2$ 读到的数据就与数据库中的数据不一致，则 $T_2$ 读到的数据就为“脏”数据。
+
+## 2. 设计与计算题
+
+1. 设计一个学生选课系统，其中学生可以选多门课程，一门课程可以由多位学生选修，一门课程只能由一位教师开设，一位教师可以开设多门课程
+    1. 试画出 E-R 图
+    2. 转换成关系模型并标注主码、外码
+
+2. 设有关系 $R$ 与 $S$
+
+$R:$
+
+| A   | B   | C   |
+| --- | --- | --- |
+| 1   | 4   | 7   |
+| 2   | 5   | 8   |
+
+$S:$
+
+| B   | D   |
+| --- | --- |
+| 6   | 7   |
+| 4   | 8   |
+
+- 计算
+    1. $\rm \sigma_{B=4}(S)$
+    2. $\rm \Pi_{B,C}(R)$
+    3. $\rm \Pi_{B}(R)-\Pi_{B}(S)$
+    4. $\rm R \Join S$
+    5. $\rm \Pi_{B}(R) \cap \Pi_{B}(S)$
+
+## 3. 综合题
+
+1. 有关系模式
+    - 学生：`student(sno, sname, sex, sage, deptno)`
+    - 课程：`course(cno, cname, cpno, ccredit)`
+    - 选课：`sc(sno, cno, grade)`
+    - 系：`dept(deptno, deptname)`
+
+- $1 \sim 3$ 题使用关系代数查询，其余使用 SQL：
+    1. 查询性别 `sex` 为 `'男'`，并且年龄 `sage` 大于 $20$ 岁的学生信息
+    2. 查询选修了课程名 `cname` 为 `'数据库'` 的学生号 `sno`，成绩 `grade`
+    3. 查询学号 `sno` 为 `'180101'` 学生没有选修的课程号 `cno`
+    4. 建立本题目中的 `course` 表，其中 `cno` 为 `char(10)` 类型，`cname` 为 `char(20)` 类型，`cpno` 为 `char(10)` 类型，`ccredit` 为 `int` 类型，主码为 `(sno)`，外码为 `cpno` 参照 `course` 表的 `cno`
+    5. 在 `course` 表中插入 `cno` 为 `'C3'`，`cname` 为 `'数据科学'`，`cpno` 为 `'C1'`，`ccredit` 为 $2$ 的数据
+    6. 查询姓张的学生的学号 `sno` 和姓名 `sname`
+    7. 查询所有课程的信息，要求按学分 `ccredit` 降序排列
+    8. 查询课程编号 `cno`，及每门课程的选课人数
+    9. 查询所有学生都选修了的课程编号 `cno` 和课程名 `cname`
+    10. 将 `course` 表中 `cno` 为 `'C3'` 的 `credit` 改为 $3$
+
+2. 关系模式 $R(U,\,F)$，其中 $U = (ABCDE),\,F = \{A \to B,\,C \to E\}$
+    1. 求 $(AC)_F^+$
+    2. 求候选码，说明步骤和判断理由
+3. 设 $T_1,\,T_2$ 是如下两个事务，其中 $A,\,B$ 为数据库中两个数据项，设 $A$ 的初值为 $10$，$B$ 的初值为 $10$
+
+$$
+\begin{aligned}
+    T_1:\quad A: & = B + 10 \\
+    T_2:\quad B: & = A * B
+\end{aligned}
+$$
+
+- 若允许这两个事务并行执行，试给出下列调度：
+    1. 遵循两段锁协议且可串行化调度
+    2. 遵循两段锁协议但发生死锁调度
+
+# 附录 C：数据库题库
+
+## 一. 填空题（每题 2 分，共 20 分）
+
+1.  数据模型通常由 <u>数据结构，数据操作，完整性约束</u> 三个要素组成
+2.  有了 <u>外模式/模式</u> 可以保证数据和应用程序之间的逻辑独立性；有了 <u>内模式/模式</u>，可以保证数据和应用程序之间的物理独立性
+3.  $\rm\sigma_{F_1}(\sigma_{F_2}(E))$ 等价于 $\rm\underline{\sigma_{F_1 \land F_2}(E)}$
+4.  关系模式进行投影运算后属性数 <u>小于或等于</u> 原属性数
+5.  SQL 的数据定义语句包括：<u>定义表，定义视图，定义索引</u> 等
+6.  在 SQL 查询时，如果要去掉查询结果中的重复元组，需使用 <u> `distinct` </u>
+7.  关系完备的系统支持 <u>关系数据结构</u>，和所有 <u>关系代数</u> 操作
+8.  事务具有 <u>原子性、一致性、隔离性、持续性</u> 的特性
+9.  在数据库系统中，定义存取权限称为 <u>授权</u>
+10. 关系数据库规范化要解决的问题是插入异常，<u>删除异常，更新异常</u>
+
+## 四. 综合题（共 30 分）
+
+### 1. 零件供应
+
+有关系模式四个：
+- 供应商关系：`S(Sno , Sname, Saddr)`
+- 零件关系：`P(Pno,  Pname, Color, Weight)`
+- 工程关系：`J(Jno, Jname, Jcity, Balance)`
+- 供应关系：`SPJ(Sno, Pno, Jno, Price, Qty)`
+
+用关系代数完成如下查询：
+1.  检索没有被发生任何供应关系的零件编号  
+    $$
+    \rm\Pi_{Pno}(P) - \Pi_{Pno}(SPJ)
+    $$
+2.  检索使用了编号为 `P3` 或 `P5` 零件的工程编号 `Jno`  
+    $$
+    \rm\Pi_{Jno}(\sigma_{Pno=`P3\text{'} \lor Pno=`P5\text{'}}(SPJ))
+    $$
+
+用 SQL 语句完成如下操作：
+1.  定义表 `SPJ`，主码：`(Sno, Pno, Jno)`，外码 `Sno`、`Pno`、`Jno`  
+    ```sql
+    CREATE TABLE SPJ (
+        Sno CHAR(4),
+        Pno CHAR(4),
+        Jno CHAR(8),
+        Price DECIMAL(6, 1),
+        Qty DECIMAL(8, 2),
+        PRIMARY KEY (Sno, Pno, Jno),
+        FOREIGN KEY (Sno) REFERENCES S(Sno),
+        FOREIGN KEY (Pno) REFERENCES P(Pno),
+        FOREIGN KEY (Jno) REFERENCES J(Jno)
+    );
+    ```
+2.  定义使用红色零件的供应商名称和地址的视图  
+    ```sql
+    ```
+3.  向spj表中加入工程号为J7的供应零件记录,而且供应给J7的零件和供应给J1的零件号及供应商相同,但每种零件的供应量改为60  
+    ```sql
+    ```
+Insert into spj 
+Select sno,pno,’J7’,60
+From spj where jno=’J1’
+4.  删除工程号为J4的所有零件供应记录  
+    ```sql
+    ```
+Delete from spj where jno=’J4’
+5.  检索不使用编号为P3零件的工程编号Jno和工程名称Jname  
+    ```sql
+    ```
+select Jno,Jname
+	from J
+	where not exists
+		(select *
+		from SPJ
+		where Pno=’P3’ and SPJ.Jno = J.Jno)；
+
+select Jno,Jname
+	from J
+	where jno not in
+		(select  jno
+		from SPJ
+		where Pno=’P3’)
+
+7.	检索至少使用了编号为P3和P5零件的工程编号Jno
+select  Jno
+	from SPJ X,SPJ Y
+	where X.Jno=Y.Jno and X.Pno=’P3’ and Y.Pno=’P5’;
+
+8.	检索使用了全部零件的工程名称Jname
+Πjname（（（Πjno，pno (spj)) ÷  Πpno(P)）∞（J））
+
+select Jname
+    from J
+	where not exists
+		(select *
+		from P
+		where not exists
+			(select *
+			from SPJ
+			where J.Jno=SPJ.Jno and P.Pno=SPJ.Pno));
+   2.有一课程管理系统：一个系可开设多门课程，学生可选修多门课程，一名教师只教一门课程,但一门课程可有几名教师开设。

@@ -43,8 +43,10 @@ render_drafts: false
 post_asset_folder: false
 relative_link: false
 future: true
+
+# 切换高亮插件
 highlight:
-  enable: true
+  enable: false
   line_number: true
   auto_detect: false
   tab_replace: ''
@@ -179,8 +181,23 @@ about:
     - { class: 'iconfont icon-github-fill', link: 'https://github.com/Sun-ZhenXing', tip: 'GitHub' }
     - { class: 'iconfont icon-qq-fill', link: 'https://qm.qq.com/cgi-bin/qm/qr?k=OH4ueewx2AEPo-5taXFhdAZ671PsW_3t&noverify=0', tip: 'QQ' }
 
+# 自定义 CSS
+# custom_css:
+#   - /css/macpanel
+
 # 公式支持
 post:
+  meta:
+    author:
+      enable: false
+    date:
+      enable: true
+    wordcount:  # 字数统计
+      enable: true
+      format: "{} 字"
+    min2read:  # 阅读时间
+      enable: true
+      format: "{} 分钟"
   banner_img: /img/default.jpg
   math:
     enable: true
@@ -194,6 +211,33 @@ post:
     enable: true
     placement: left
     headingSelector: "h1,h2,h3"
+  mermaid:
+    enable: true
+    specific: true
+    options:
+
+# 代码
+code:
+  copy_btn: true
+  # 代码语言
+  language:
+    enable: true
+    default: "TEXT"
+  # 代码高亮
+  highlight:
+    enable: true
+    line_number: true
+    # Options: highlightjs | prismjs
+    lib: "highlightjs"
+    highlightjs:
+      # See: https://highlightjs.org/static/demo/
+      style: "github gist"
+      style_dark: "dark"
+    prismjs:
+      # See: https://prismjs.com/
+      style: "default"
+      style_dark: "tomorrow night"
+      preprocess: false
 
 # 页脚
 footer:
@@ -208,8 +252,7 @@ footer:
 
 # # 解决 KaTeX 字体加载问题问题
 static_prefix:
-  katex: https://cdn.bootcdn.net/ajax/libs/KaTeX/0.10.2/
-  mathjax: https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/
+  katex: https://cdn.staticfile.org/KaTeX/0.10.2/
 
 # 如果网站是 HTTPS 改为 true
 force_https: true

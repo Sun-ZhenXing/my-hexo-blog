@@ -44,7 +44,7 @@ post_asset_folder: false
 relative_link: false
 future: true
 highlight:
-  enable: true
+  enable: false
   line_number: true
   auto_detect: false
   tab_replace: ''
@@ -108,11 +108,12 @@ deploy:
 math:
   engine: katex
   katex:
-    css: https://cdn.bootcdn.net/ajax/libs/KaTeX/0.10.2/katex.min.css
-    js: https://cdn.bootcdn.net/ajax/libs/KaTeX/0.10.2/katex.min.js
+    css: https://cdn.staticfile.org/KaTeX/0.10.2/katex.min.css
+    js: https://cdn.staticfile.org/KaTeX/0.10.2/katex.min.js
     config:
       throwOnError: false
       errorColor: "#cc0000"
+      strict: false
 
 markdown_it_plus:
   plugins:

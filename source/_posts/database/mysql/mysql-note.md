@@ -10,6 +10,7 @@ tags:
 ---
 
 本文是 [*狂神说 Java：MySQL 最新教程通俗易懂*](https://www.bilibili.com/video/BV1NJ411J79W) 的课程笔记。本文的 MySQL 学习是业务层面的 MySQL，运维级别的 MySQL 可以参考更多更深入的资料。
+
 <!-- more -->
 
 <div class="note note-success">
@@ -967,6 +968,11 @@ HAVING AVG(studentresult) > 80;
 - 隔离性
 - 持久性
 
+隔离性的问题：
+- 脏读：一个事务提交了，但另一个没有提交
+- 不可重复读：同一个事务内，重复读取表中的数据，表数据发生了改变
+- 虚读（幻读）：在一个事务中读到了别人插入的数据，导致前后结果不一致
+
 ```sql
 -- 关闭自动提交
 SET autocommit = 0;
@@ -1320,10 +1326,357 @@ PS：可以使用一些前端框架，整合数据库和后端：
 
 # 10. JDBC
 
+## 10.1 数据库驱动
+
+Sun 公司为了简化数据库的开发操作，提供了一个 Java 操作数据库的规范，称为 JDBC，这些规范由具体的数据局厂商去实现。
+
+对于开发人员来说，我们只需要掌握 JDBC 接口操作即可。
+
+除了需要 JDBC 的包，我们还需要 MySQL 数据库驱动包：`mysql-connector-java-5.1.47.jar` 。
+
+## 10.2 第一个 JDBC 程序
+
+我们首先创建一个数据库：
+
+```sql
+CREATE DATABASE JDBCStudy CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+USE jdbcstudy;
+
+CREATE TABLE users (
+    `id` INT PRIMARY KEY,
+    `name` VARCHAR(40),
+    `password` VARCHAR(40),
+    `email` VARCHAR(60),
+    `birthday` DATE
+);
+
+INSERT INTO users VALUES
+    (1, 'zhangsan', '123456', 'zs@sina.com', '1980-12-04'),
+    (2, 'lisi', '12345123126', 'ls@sina.com', '1982-12-04'),
+    (3, 'kkww', '1ed23456', 'kw@sina.com', '1999-12-04');
+```
+
+按照如下的步骤创建 JDBC 项目：
+1. 创建一个 Java 项目
+2. 复制数据库驱动 `.jar` 包到 `@/lib/` 文件夹下，然后导入到库
+3. 编写代码测试
+
+```java
+import java.sql.*;
+
+public class Test {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        // 1. 加载驱动
+        Class.forName("com.mysql.jdbc.Driver");
+        String url = "jdbc:mysql://localhost:3306/jdbcstudy?useUnicode=true&characterEncoding=utf-8&useSSL=true";
+        String user = "root";
+        String password = "xxxxxx";
+        // 2. 获取连接
+        Connection conn = DriverManager.getConnection(url, user, password);
+        // 3. 创建语句
+        Statement stmt = conn.createStatement();
+        String sql = "select * from users";
+        // 4. 执行 SQL 语句
+        ResultSet rs = stmt.executeQuery(sql);
+        // 5. 循环判断是否有下一行
+        while (rs.next()) {
+            System.out.println("--------------------");
+            System.out.println(rs.getObject("id"));
+            System.out.println(rs.getObject("name"));
+            System.out.println(rs.getObject("password"));
+            System.out.println(rs.getObject("email"));
+            System.out.println(rs.getObject("birthday"));
+        }
+        // 6. 关闭资源
+        rs.close();
+        stmt.close();
+        conn.close();
+    }
+}
+```
+
+`DriverManager` 原始的写法如下，但是使用反射可以直接注册，如果再写下面的语句相当于被注册了两次。
+
+```java
+DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+```
+
+数据库的基本设置可以使用连接对象设置：
+
+```java
+conn.rollback();
+conn.commit();
+conn.setAutoCommit(false);
+```
+
+语句对象：
+
+| 方法                   | 功能                                     |
+| ---------------------- | ---------------------------------------- |
+| `stmt.execute()`       | 执行任何 SQL                             |
+| `stmt.executeQuery()`  | 执行查询操作                             |
+| `stmt.executeUpdate()` | 更新、插入或删除操作，返回受到影响的行数 |
+| `stmt.executeBatch()`  | 执行多个 SQL                             |
 
 
+结果集对象：
 
+| 方法             |
+| ---------------- |
+| `rs.next()`      |
+| `rs.getObject()` |
+| `rs.getInt()`    |
+| `rs.getFloat()`  |
+| `rs.getDate()`   |
+| `rs.getString()` |
 
+## 10.3 封装 JDBC 连接
 
+新建 `db.properties` 文件：
 
+```properties
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/jdbcstudy?useUnicode=true&characterEncoding=utf-8&useSSL=true
+username=root
+password=xxxxx
+```
 
+新建类 `JdbcUtils.java` 然后编写：
+
+```java
+import java.sql.*;
+
+public class JdbcUtils {
+
+    private static String driver = null;
+    private static String url = null;
+    private static String username = null;
+    private static String password = null;
+
+    static {
+        try {
+            InputStream in = JdbcUtils.class.getClassLoader().getResourceAsStream("db.properties");
+            Properties props = new Properties();
+            props.load(in);
+
+            driver = props.getProperty("driver");
+            url = props.getProperty("url");
+            username = props.getProperty("username");
+            password = props.getProperty("password");
+
+            Class.forName(driver);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Connection getConnection() {
+        try {
+            return DriverManager.getConnection(url, username, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void release(Connection conn, Statement st, ResultSet rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (st != null) {
+            try {
+                st.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+更新数据：
+
+```java
+import java.sql.*;
+
+public class Test {
+    public static void main(String[] args) {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = JdbcUtils.getConnection();
+            stmt = conn.createStatement();
+            String sql = "insert into users values (4, 'Alex', '123', 'yali@alexsun.top', '2002-06-05')";
+            int i = stmt.executeUpdate(sql);
+            if (i > 0) {
+                System.out.println("插入成功");
+            } else {
+                System.out.println("插入失败");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JdbcUtils.release(conn, stmt, rs);
+        }
+    }
+}
+```
+
+## 10.4 解决 SQL 注入问题
+
+`PreparedStatement` 可以防止 SQL 注入，并且拥有更高的效率。
+
+```java
+import java.sql.*;
+
+public class Test {
+    public static void main(String[] args) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = JdbcUtils.getConnection();
+            pstmt = conn.prepareStatement("insert into users values (?,?,?,?,?)");
+            st.setInt(1, 5);
+            st.setString(2, "1");
+            st.setString(3, "1");
+            st.setString(4, "1");
+            st.setDate(5, new Date(new java.util.Date().getTime()));
+            int i = st.executeUpdate();
+            if (i > 0) {
+                System.out.println("插入成功");
+            } else {
+                System.out.println("插入失败");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JdbcUtils.release(conn, pstmt, rs);
+        }
+    }
+}
+```
+
+## 10.5 JDBC 事务
+
+JDBC 实现事务：
+
+```java
+import java.sql.*;
+
+public class Test {
+    public static void main(String[] args) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = JdbcUtils.getConnection();
+            conn.setAutoCommit(false);
+            String sql1 = "UPDATE account SET money=money-500 WHERE `name` = 'A'";
+            String sql2 = "UPDATE account SET money=money+500 WHERE `name` = 'B'";
+            pstmt1 = conn.prepareStatement(sql1);
+            pstmt2 = conn.prepareStatement(sql2);
+            pstmt1.executeUpdate();
+            pstmt2.executeUpdate();
+            conn.commit();
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            JdbcUtils.release(conn, pstmt, rs);
+        }
+    }
+}
+```
+
+如果不写 `conn.rollback();` 事务也会被回滚。
+
+## 10.6 数据库连接池
+
+原始的数据库连接过程：
+1. 建立数据库连接
+2. 执行完毕
+3. 释放
+
+连接 —— 释放过程十分浪费时间。池化技术是准备一些预先的资源，过来就连接预先准备好的。
+
+几个常用值：
+- 常用连接数
+- 最小连接数
+- 最大连接数
+- 超时时间
+
+如果超过了最大连接数就只能排队等待，如果一个连接超时就会抛出错误并结束连接。
+
+如果需要编写连接池，需要实现 `DataSource` 接口。
+
+常见的开源数据源实现：
+- DBCP
+- C3P0
+- Druid
+
+使用了数据库连接池之后，我们就不需要编写连接数据库的代码。
+
+## 10.7 DBCP 连接池
+
+需要下面的 `.jar` 包支持：
+- `commons-dbcp-1.4.jar`
+- `commons-pool-1.6.jar`
+
+```java
+import org.apache.commons.dbcp.BasicDataSourceFactory;
+import java.sql.*;
+
+public class JdbcUtilsDBCP {
+
+    private static DataSource dataSource = null;
+
+    static {
+        try {
+            InputStream in = JdbcUtilsDBCP.class.getClassLoader().getResourceAsStream("db_dbcp.properties");
+            Properties props = new Properties();
+            props.load(in);
+            dataSource = BasicDataSourceFactory.createDataSource(props);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Connection getConnection() {
+        return dataSource.getConnection();
+    }
+
+    public static void release() {
+        dataSource.destroy();
+    }
+}
+```
+
+C3P0 类似，可以参考文档进行实现。
+
+后续可以学习：
+- Druid
+- Apache 项目的其他软件

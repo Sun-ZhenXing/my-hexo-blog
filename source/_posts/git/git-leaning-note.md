@@ -74,7 +74,7 @@ git init
 
 在当前目录下面新建 `README.md` 文件，然后写入两行内容：
 
-```
+```plaintext
 Git is a version control system.
 Git is free software.
 ```
@@ -135,7 +135,7 @@ git status
 
 显示下面的结果则表示提交成功：
 
-```
+```plaintext
 On branch master
 nothing to commit, working tree clean
 ```
