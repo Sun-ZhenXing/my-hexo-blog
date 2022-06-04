@@ -118,7 +118,7 @@ navbar:
 # 主页
 index:
   post_url_target: _self
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   banner_img_height: 80
   banner_mask_alpha: 0.3
   # 打字机
@@ -134,21 +134,21 @@ index:
 
 # 归档页面
 archive:
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   banner_img_height: 80
   banner_mask_alpha: 0.3
 
 # 分类页面
 category:
   enable: true
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   banner_img_height: 80
   banner_mask_alpha: 0.3
 
 # 标签页面
 tag:
   enable: true
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   banner_img_height: 80
   banner_mask_alpha: 0.3
   tagcloud:
@@ -160,14 +160,14 @@ tag:
 
 # 自定义页面
 page:
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   banner_img_height: 80
   banner_mask_alpha: 0.3
 
 # 404 页面
 page404:
   enable: true
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   banner_img_height: 85
   banner_mask_alpha: 0.3
   redirect_delay: 10000
@@ -177,13 +177,17 @@ about:
   avatar: /img/avatar.jpg
   name: "鸭梨"
   intro: "终身学习大学新生"
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   icons:
     - { class: 'iconfont icon-github-fill', link: 'https://github.com/Sun-ZhenXing', tip: 'GitHub' }
     - { class: 'iconfont icon-qq-fill', link: 'https://qm.qq.com/cgi-bin/qm/qr?k=OH4ueewx2AEPo-5taXFhdAZ671PsW_3t&noverify=0', tip: 'QQ' }
 
 # 自定义 CSS
-# custom_css:
-#   - /css/macpanel
+custom_css:
+  # Mac 样式代码
+  - /css/macpanel
+  - /css/katex-addon
+  - /css/code
 
 # 公式支持
 post:
@@ -198,7 +202,7 @@ post:
     min2read:  # 阅读时间
       enable: true
       format: "{} 分钟"
-  banner_img: /img/default.jpg
+  banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   math:
     enable: true
     specific: true
@@ -253,6 +257,7 @@ footer:
 # # 解决 KaTeX 字体加载问题问题
 static_prefix:
   katex: https://cdn.staticfile.org/KaTeX/0.10.2/
+  mermaid: https://lib.baomitu.com/mermaid/9.1.1/
 
 # 如果网站是 HTTPS 改为 true
 force_https: true

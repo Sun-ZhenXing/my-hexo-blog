@@ -3,10 +3,10 @@ title: 学习使用 Mermaid
 date: 2022-05-28 09:54:57
 mermaid: true
 categories:
-  - [META, Mermaid]
+  - [Markdown, Mermaid]
 tags:
   - Mermaid
-  - META
+  - 元定义
 ---
 
 [Mermaid](https://github.com/mermaid-js/mermaid/blob/HEAD/README.zh-CN.md) 是用于在 MarkDown 中生成图标的 JS 库，本文是 Mermaid 的基本语法介绍，还包含了如何在 Hexo Fluid 主题内配置 Mermaid 的一份指南。
@@ -17,13 +17,19 @@ tags:
 
 ## 1.1 Mermaid 简介
 
+MarkDown 的宗旨是 **重内容，重结构，轻排版**。如果我们恰好同时对 Markdown 的 *标记式* 记录方法高度认可的话，那么有没有想过使用类似 Markdown 形式的语言，快速 *写* 一个 **流图** 出来？
+
 Mermaid 是一个 JS 实现的一个三方库，浅显的理解就是 生成图表 的 “Markdown 语法” 用纯文本格式编写图表。
 
 目前这个插件已经广受支持了，很多支持 Markdown 语法的编辑器也支持了 Mermaid，比如
 - 掘金
 - 语雀
-- 印象笔记
+- 印象笔记 Markdown 笔记
 - Typora
+- 有道云笔记
+- MWeb
+- VSCode + Mermaid 插件
+- Atom + Mermaid 插件
 
 你可以在这里体验：[Mermaid 在线编辑器](https://mermaid-js.github.io/mermaid/) 。
 
@@ -142,7 +148,7 @@ var config = {
 mermaid.initialize(config);
 ```
 
-# 2. Mermaid 语法
+# 2. Mermaid 流图
 
 ## 2.1 布局方向
 
@@ -479,13 +485,542 @@ graph LR
 
 ## 2.4 高级用法
 
-## 2.5 小结
++ `-->-->`：链式连接
++ `&`：共同连接
++ `""`：字符串
++ `%%`：注释
++ `subgraph`：子图
 
-### 2.5.1 名词缩写
+### 2.4.1 链式连接
 
-### 2.5.2 几何形状
+支持链式连接方式，`A --> B --> C` 等价于 `A --> B` 和 `B --> C` 形式：
 
-### 2.5.3 有限语法
+```plaintext
+graph LR
+   A -- text --> B -- text2 --> C
+```
+
+```mermaid
+graph LR
+   A -- text --> B -- text2 --> C
+```
+
+### 2.4.2 多节点共同连接
+
+支持共同连接方式，`A --> B & C` 等价于 `A --> B` 和 `A --> C` 形式：
+
+```plaintext
+graph LR
+   a --> b & c--> d
+```
+
+```mermaid
+graph LR
+   a --> b & c--> d
+```
+
+### 2.4.3 多节点相互连接
+
+多节点共同连接的变体形式，`A & B --> C & D` 等价于 `A --> C`、`A --> D`、`B --> C` 和 `B --> D` 四种组合形式：
+
+```plaintext
+graph TB
+    A & B--> C & D
+```
+
+```mermaid
+graph TB
+    A & B--> C & D
+```
+
+### 2.4.4 字符串包裹
+
+字符串可以包裹特殊字符：
+
+```plaintext
+graph LR
+    id1["This is the (text) in the box"]
+```
+
+```mermaid
+graph LR
+    id1["This is the (text) in the box"]
+```
+
+也可以包含 HTML 转义字符：
+
+```plaintext
+graph LR
+    A["A double quote:#quot;"] -->B["A dec char:#9829;"]
+```
+
+```mermaid
+graph LR
+    A["A double quote:#quot;"] -->B["A dec char:#9829;"]
+```
+
+### 2.4.5 嵌套子流程图
+
+
+```plaintext
+graph TB
+    c1-->a2
+    subgraph one
+        a1-->a2
+    end
+    subgraph two
+        b1-->b2
+    end
+    subgraph three
+        c1-->c2
+    end
+```
+
+```mermaid
+graph TB
+    c1-->a2
+    subgraph one
+        a1-->a2
+    end
+    subgraph two
+        b1-->b2
+    end
+    subgraph three
+        c1-->c2
+    end
+```
+
+# 3. Mermaid 序列图
+
+# 4. Mermaid 类图
+
+# 5. Mermaid 状态图
+
+# 6. Mermaid E-R 图
+
+<div class="note note-success">
+
+实体-关系模型（或 E-R 模型）描述了特定知识领域中感兴趣的相互关联的事物。一个基本的 E-R 模型是由实体类型（对感兴趣的事物进行分类）和指定实体（这些实体类型的实例）之间可能存在的关系组成。
+
+<cite>维基百科</cite>
+
+</div>
+
+**E-R 图** 最早由 Peter Chen 提出，E-R 图的中文名称叫 **实体-关系图**，是数据库设计所使用的重要模型。
+
+提出来 E-R 图的时候，使用矩形表示实体集，椭圆形表示属性，菱形表示关系。类似于这样：
+
+```mermaid
+graph LR
+A["A"]
+B["B"]
+C["C"]
+R1{"R1"}
+R2{"R2"}
+p1(["p1"])
+p2(["p2"])
+p3(["p3"])
+p4(["p4"])
+p5(["p5"])
+p1 & p2 --- A --- R1 --- B --- p3
+R2 --- B & C
+C --- p4 & p5
+```
+
+这种表示方法叫做 **Chen 方法**（陈氏表示法）。这个方法存在的最大问题就是当一个实体存在很多属性的时候，就是产生非常多的椭圆，导致图片非常混乱，不清晰明了。后来的一种比较有名的改进方法叫做 **乌鸦脚**（Crow’s Foot）方法，示例如图：
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+各种 *脚* 的含义如下：
+
+```mermaid
+erDiagram
+    A ||--o{ B : C
+```
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="241px" viewBox="-0.5 -0.5 241 121" style="max-width:100%;max-height:121px;"><defs/><g><rect x="0" y="0" width="240" height="120" fill="#ffffff" stroke="none" pointer-events="all"/><path d="M 50 110 L 70 110 Q 80 110 83.71 100.72 L 116.29 19.28 Q 120 10 130 10 L 150 10" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/><ellipse cx="138" cy="10" rx="3" ry="3" fill="#ffffff" stroke="#000000" pointer-events="all"/><path d="M 150 6 L 142 10 L 150 14" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/><path d="M 130 110 L 150 110 Q 160 110 163.71 100.72 L 196.29 19.28 Q 200 10 210 10 L 230 10" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 222 14 L 222 6 M 230 6 L 222 10 L 230 14" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/><path d="M 90 110 L 110 110 Q 120 110 123.71 100.72 L 156.29 19.28 Q 160 10 170 10 L 190 10" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/><path d="M 186 14 L 186 6 M 182 14 L 182 6" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/><path d="M 10 110 L 30 110 Q 40 110 43.71 100.72 L 76.29 19.28 Q 80 10 90 10 L 110 10" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/><ellipse cx="98" cy="10" rx="3" ry="3" fill="#ffffff" stroke="#000000" pointer-events="all"/><path d="M 106 14 L 106 6" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/></g></svg>
+
+上面的四个符号分别代表：
+- 0 个或 1 个
+- 0 个或多个
+- 1 个
+- 1 个或多个
+
+上面的符号可以自由组合，所以可以产生十六种不同的连接关系。但是一般情况下我们只讨论三种关系，M:N、M:1 和 1:1，根据能否等于 0 来确定是否需要画圈即可。
+
+下面的示例和语法将对此作详细说明。
+
+## 6.1 示例
+
+```plaintext
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+```
+
+实体名称通常是大写的，尽管在这方面没有公认的标准，而且在 Mermaid 中也没有要求。
+
+实体之间的关系用线来表示，线的末端标记代表对应数值。Mermaid 使用最流行的 **乌鸦脚符号**。乌鸦脚直观地表达了它所连接的实体的许多实例的可能性。
+
+E-R 图可以用于各种目的，从没有任何实现细节的抽象逻辑模型，到关系数据库表的物理模型。在 E-R 图中加入属性定义可以帮助理解实体的目的和意义。这些不一定要详尽，通常一个小的属性子集就足够了。Mermaid 允许定义其 `type` 和 `name` 。
+
+```plaintext
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    CUSTOMER {
+        string name
+        string custNumber
+        string sector
+    }
+    ORDER ||--|{ LINE-ITEM : contains
+    ORDER {
+        int orderNumber
+        string deliveryAddress
+    }
+    LINE-ITEM {
+        string productCode
+        int quantity
+        float pricePerUnit
+    }
+```
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    CUSTOMER {
+        string name
+        string custNumber
+        string sector
+    }
+    ORDER ||--|{ LINE-ITEM : contains
+    ORDER {
+        int orderNumber
+        string deliveryAddress
+    }
+    LINE-ITEM {
+        string productCode
+        int quantity
+        float pricePerUnit
+    }
+```
+
+在 E-R 图上包括属性时，你必须决定是否将外键作为属性包括在内。这可能取决于你试图表现关系表结构的紧密程度。
+
+如果你的图是一个逻辑模型，并不是为了暗示关系的实现，那么最好不包括这些，因为关联关系已经传达了实体的关联方式。例如，一个 JSON 数据结构可以实现一对多的关系，而不需要外键属性，使用数组。同样地，面向对象的编程语言可以使用指针或对集合的引用。甚至对于那些旨在实现关系的模型，你可能会决定包含外键属性会重复已经被关系所描绘的信息，并且不会给实体增加意义。归根结底，这是你的选择。
+
+## 6.2 语法
+
+E-R 图的一般语法是：
+
+```
+<first-entity> [<relationship> <second-entity> : <relationship-label>]
+```
+
+
+# 7. Mermaid 旅程图
+
+# 8. Mermaid 甘特图
+
+# 9. Mermaid 饼状图
+
+<div class="note note-success">
+
+饼图是一种圆形的统计图形，它被分成若干片，以说明数字比例。在饼图中，每个片断的弧长（以及由此产生的中心角和面积）与它所代表的数量成正比。虽然它因类似于一个被切开的饼而被命名，但它的表现方式却有不同。最早的饼图一般归功于威廉·普莱费尔 1801 年的《统计手册》。
+
+<cite>维基百科</cite>
+
+</div>
+
+## 9.1 示例
+
+```plaintext
+pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
+```
+
+```mermaid
+pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
+```
+
+## 9.2 语法
+
+绘制饼状图的语法比较简单：
+- 用 `pie` 关键字开始画图
+- `showData` 关键字用于在图例文本之后呈现实际的数据值，这是可选的
+- 紧接着是 `title` 关键字和它的字符串值，给饼图一个标题，这也是可选的
+- 后面的是数据集
+    - 饼图中每个对象的标签都在引号（`" "`）内
+    - 标签后面使用冒号（`:`）作为分隔符
+    - 后面是正的数值（支持到小数点后两位）
+
+下面是一个示例：
+
+```plaintext
+pie showData
+    title Key elements in Product X
+    "Calcium" : 42.96
+    "Potassium" : 50.05
+    "Magnesium" : 10.01
+    "Iron" :  5
+```
+
+```mermaid
+pie showData
+    title Key elements in Product X
+    "Calcium" : 42.96
+    "Potassium" : 50.05
+    "Magnesium" : 10.01
+    "Iron" :  5
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+```plaintext
+
+```
+
+```mermaid
+
+```
+
+
+# 10. Mermaid 依赖图
+
+# 11. Mermaid Git 图
+
+# 12. 其他示例
 
 # 参考
 
@@ -494,3 +1029,5 @@ graph LR
 [2] 时间管理、头脑风暴、阅读、会议记录神器-Mermaid，掘金，<https://juejin.cn/post/6971426277261574152>
 
 [3] 雪之梦的 GitHub 博客，github.io，<https://snowdreams1006.github.io/write/mermaid-flow-chart.html>
+
+[4] Mermaid：就像用 Markdown 码字一样高效制作简易流图，少数派，<https://sspai.com/post/63055#!>

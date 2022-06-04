@@ -63,7 +63,7 @@ django-admin startproject mysite
 
 <div class="note note-warning">
 
-你的项目名不应该是任何 Python 关键字或者保留字，也不应该使用除了英文之外的其他语言，尽量不要包含空格。最好避免和其他内置库或者第三方米模块的名字冲突。
+你的项目名不应该是任何 Python 关键字或者保留字，也不应该使用除了英文之外的其他语言，尽量不要包含空格。最好避免和其他内置库或者第三方模块的名字冲突。
 
 </div>
 
@@ -213,7 +213,7 @@ python manage.py runserver
 
 访问 <http://127.0.0.1:8000/polls/>，可以看到我们返回的结果：
 
-```
+```text
 Hello, world. You're at the polls index.
 ```
 
