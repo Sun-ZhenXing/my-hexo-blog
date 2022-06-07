@@ -207,6 +207,17 @@ post:
     enable: true
     specific: true
     engine: katex
+    katex:
+      css: https://cdn.staticfile.org/KaTeX/0.10.2/katex.min.css
+      js: https://cdn.staticfile.org/KaTeX/0.10.2/katex.min.js
+      config:
+        options:
+          throwOnError: false
+          errorColor: "#cc0000"
+          strict: false
+  footnote:
+    enable: true
+    header: ''
   copyright:
     enable: true
     # Options: BY | BY-SA | BY-ND | BY-NC | BY-NC-SA | BY-NC-ND

@@ -1,6 +1,7 @@
 ---
 title: Java 多线程
 date: 2022-06-03 20:22:14
+mermaid: true
 categories:
   - [Java, Java 语言]
 tags:
@@ -176,11 +177,445 @@ public class TestThread implements Runnable {
 }
 ```
 
+我们发现这几个人买票有重复的情况。多个线程操作同一个资源，线程不安全，数据会产生混乱。
+
+### 1.2.4 龟兔赛跑
+
+我们可以让兔子线程休息一会：
+
+```java
+public class Race implements Runnable {
+
+    // 胜利者
+    private static String winner;
+
+    @Override
+    public void run() {
+        for (int i = 0; i <= 100; i++) {
+            if (i % 10 == 0 && Thread.currentThread().getName().equals("兔子")) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (gameOver(i)) {
+                break;
+            }
+            System.out.println(Thread.currentThread().getName() + ": " + i);
+        }
+    }
+
+    /**
+     * 判断是否有胜利者
+     */
+    private boolean gameOver(int steps) {
+        if (winner != null) {
+            return true;
+        }
+        if (steps >= 100) {
+            winner = Thread.currentThread().getName();
+            System.out.println(winner + " wins!");
+            return true;
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        Race race = new Race();
+        new Thread(race, "兔子").start();
+        new Thread(race, "乌龟").start();
+    }
+}
+```
+
+### 1.2.5  实现 `Callable` 接口
+
+实现 `Callable` 接口的好处是：
+- 可以抛出异常
+- 可以定义返回值
+
+由于实现稍微繁琐，所以也不是很常用。
+
+实现步骤：
+1.  实现 `Callable` 接口，需要返回值类型
+2.  重写 `call()` 方法，需要抛出异常
+3.  创建目标对象
+4.  创建执行服务
+    ```java
+    ExecutorService ser = Executor.newFixedThreadPool(1);
+    ```
+5.  提交执行  
+    ```java
+    Future<Boolean> res = ser.submit(t1);
+    ```
+6.  获取结果  
+    ```java
+    boolean r1 = res.get();
+    ```
+7.  关闭服务  
+    ```java
+    ser.shutdownNow();
+    ```
+
+```java
+public class Test implements Callable<Boolean> {
+
+    @Override
+    public Boolean call() {
+        // 执行内容
+        return true;
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        ExecutorService ser = Executor.newFixedThreadPool(1);
+        Future<Boolean> res = ser.submit(t1);
+        boolean r1 = res.get();
+        ser.shutdownNow();
+    }
+}
+```
+
+### 1.2.6 静态代理
+
+以婚庆公司代理结婚者为例，解释静态代理模式：
+
+```java
+public class StaticProxy {
+    public static void main(String[] args) {
+        Alex alex = new Alex();
+        WeddingCompany weddingCompany = new WeddingCompany(alex);
+        weddingCompany.happyMarry();
+
+    }
+}
+
+interface Marry {
+    void happyMarry();
+}
+
+class Alex implements Marry {
+    @Override
+    public void happyMarry() {
+        System.out.println("Alex marry");
+    }
+}
+
+class WeddingCompany implements Marry {
+    private Marry marry;
+
+    public WeddingCompany(Marry marry) {
+        this.marry = marry;
+    }
+
+    @Override
+    public void happyMarry() {
+        before();
+        marry.happyMarry();
+        after();
+    }
+
+    private void before() {
+        System.out.println("before");
+    }
+
+    private void after() {
+        System.out.println("after");
+    }
+}
+```
+
+总结：
+- 真实对象和目标对象都需要实现共同接口
+- 代理对象要代理真实角色
+
+好处：
+- 代理对象可以做很多真实对象做不了的事情
+- 真实对象可以专注于自己的事情
+
+下面的两行代码可以类比：
+
+```java
+new WeddingCompany(new Alex()).happyMarry();
+
+new Thread(() -> System.out.println("...")).start();
+```
+
+### 1.2.7 Lambda 表达式
+
+匿名函数：
+- 避免内部类定义过多
+- 属于函数式编程
+- 语法
+    - `(params) -> expr`
+    - `(params) -> stmt`
+    - `(params) -> { stmt }`
+
+任何接口，如果只包含一个抽象方法，那么它就是一个函数式接口：
+
+```java
+public interface Runnable {
+    public abstract void run();
+}
+```
+
+举例：
+
+```java
+public class Test {
+    public static void main(String[] args) {
+        ILike like = new Like();
+        like.lambda();
+    }
+}
+
+public interface ILike {
+    public lambda();
+}
+
+class Like implements ILike {
+    @Override
+    public void lambda() {
+        System.out.println("I like lambda!");
+    }
+}
+```
+
+静态内部类：
+
+```java
+public class Test {
+
+    static class Like implements ILike {
+        @Override
+        public void lambda() {
+            System.out.println("I like lambda!");
+        }
+    }
+
+    public static void main(String[] args) {
+        ILike like = new Like();
+        like.lambda();
+    }
+}
+
+public interface ILike {
+    public lambda();
+}
+```
+
+局部内部类：
+
+```java
+public class Test {
+
+    public static void main(String[] args) {
+        class Like implements ILike {
+            @Override
+            public void lambda() {
+                System.out.println("I like lambda!");
+            }
+        }
+        ILike like = new Like();
+        like.lambda();
+    }
+}
+
+public interface ILike {
+    public lambda();
+}
+```
+
+匿名内部类：
+
+```java
+public class Test {
+
+    public static void main(String[] args) {
+        ILike like = new ILike() {
+            @Override
+            public void lambda() {
+                System.out.println("I like lambda!");
+            }
+        };
+        like.lambda();
+    }
+}
+
+public interface ILike {
+    public lambda();
+}
+```
+
+使用 JDK 1.8 定义 Lambda：
+
+```java
+public class Test {
+
+    public static void main(String[] args) {
+        ILike like = () -> {
+            System.out.println("I like lambda");
+        };
+        like.lambda();
+    }
+}
+
+public interface ILike {
+    public lambda();
+}
+```
+
+带参数的版本：
+
+```java
+public class Test {
+
+    public static void main(String[] args) {
+        ILike like = a -> System.out.println("I like lambda: " + a);
+        like.lambda();
+    }
+}
+
+public interface ILike {
+    public lambda(int a);
+}
+```
+
 ## 1.3 线程状态
 
+### 1.3.1  线程的五大状态
 
+1. **创建状态**：线程对象一旦创建就进行创建状态  
+    ```java
+    Thread t = new Thread()
+    ```
+2. **就绪状态**：当调用 `start()` 方法时，线程进入就绪状态  
+    ```java
+    t.start()
+    ```
+3. **运行状态**：当 CPU 调度线程时，线程进入运行状态
+    - 进入运行状态，线程才开始执行代码
+4. **阻塞状态**：当线程 `sleep` 或等待资源时，线程进入阻塞状态
+5. **死亡状态**：当线程执行结束或被中断时进入死亡状态，死亡后的线程不能再次启动
+
+```mermaid
+graph TD
+    Created(["创建状态"])
+    Blocked(["阻塞状态"])
+    Dead(["死亡状态"])
+    Ready(["就绪状态"])
+    Running(["运行状态"])
+    Created -- 启动线程 --> Ready
+    Ready -- 获得 CPU 资源 --> Running
+    Running -- 释放 CPU 资源 --> Ready
+    Running -- 线程执行完成或终止 --> Dead
+    Running -- 线程休眠或等待输入 --> Blocked
+    Blocked -- 阻塞解除 --> Ready
+```
+
+线程的方法：
+
+| 方法 | 说明 |
+| ---- | ---- |
+| `setPriority(int priority)` | 设置线程的优先级 |
+| `static void sleep(long millis)` | 线程休眠 |
+| `void join()` | 等待该线程终止 |
+| `static void yield()` | 暂停当前正在执行的线程对象，并执行其他线程 |
+| `boolean isAlive()` | 测试线程是否处于活动状态 |
+| `void interrupt()` | *`@Deprecated`*，中断测试 |
+| `void destroy()` | *`@Deprecated`*，销毁线程 |
+| `void stop()` | *`@Deprecated`*，停止线程 |
+
+<div class="note note-warning">
+
+过时的方法都不建议使用，建议在线程内设置标志变量进行判断，让线程自己停下来。
+
+</div>
+
+### 1.3.2 线程礼让
+
+礼让将当前的线程暂停，但不阻塞。具体结果是否成功取决于 CPU 分配的结果。相当于让线程从运行状态转换为就绪状态。
+
+```java
+public class TestYield {
+    public static void main(String[] args) {
+        TestYield testYield = new TestYield();
+        new Thread(testYield, "a").start();
+        new Thread(testYield, "b").start();
+    }
+}
+
+class MyYield implements Runnable {
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName() + " 开始执行");
+        Thread.yield();
+        System.out.println("线程停止执行");
+    }
+}
+```
+
+### 1.3.3 线程强制执行
+
+`join()` 合并线程，将其他线程阻塞，等待此线程执行结束。
+
+```java
+thread.join();
+```
+
+### 1.3.4 线程状态观测
+
+`Thread.State` 表示线程状态，线程可以处于下面的状态之一：
+- `NEW`：尚未启动的线程处于这个状态
+- `RUNNABLE`：在 Java 虚拟机中执行的线程处于此状态
+- `BLOCKED`：被阻塞等待监视器锁定的线程处于此状态
+- `WAITING`：正在等待另一个线程执行特定动作的线程处于此状态
+- `TIMED_WAITING`：正在等待另一个线程执行动作达到指定等待时间的线程处于此状态
+- `TERMINATED`：已退出的线程处于此状态
+
+一个线程可以在给定时间点处于一个状态，这些状态是不反映任何操作系统线程状态的虚拟机状态。
+
+通过 `thread.getState()` 获取线程的状态。
+
+### 1.3.5 线程的优先级
+
+Java 提供了一个线程调度器来监控程序中启动后进入就绪状态的所有线程，线程调度器按照优先级决定调度哪个线程来执行。
+
+默认的线程优先级定义：
+
+```java
+Thread.MIN_PRIORITY = 1;
+Thread.MAX_PRIORITY = 10;
+Thread.NORM_PRIORITY = 5;
+```
+
+超过范围会报错。使用 `getPriority()` 获取优先级，使用 `setPriority()` 设置优先级。
+
+主函数以默认的优先级运行，优先级应该在线程运行前设置。
+
+### 1.3.6 守护线程
+
+线程分为用户线程和守护线程：
+- 虚拟机必须确保用户线程执行完毕
+- 虚拟机不用等待守护线程执行完毕
+- 守护线程
+    - 后台记录日志操作
+    - 监控内存
+    - 垃圾回收
+
+`thread.setDaemon(true)` 可以将普通的线程设置为守护线程。
 
 ## 1.4 线程同步
+
+### 1.4.1 线程锁
+
+由于多个线程共享同一块存储空间，这带来了访问冲突的问题，为了保证数据在方法中被访问时的正确性，在访问时加入锁机制（`synchronized`），当一个线程获得对象的排它锁，独占资源，其他线程必须等待，使用后释放锁即可，但存在下面的问题：
+- 一个线程持有锁会导致其他所有需要此锁的线程挂起
+- 在多线程竞争下，加锁，释放锁会导致比较多的上下文切换和调度延时，引起性能问题
+- 如果一个优先级高的线程等待一个优先级低的线程释放锁，会导致优先级倒置，引起性能问题
+
+
 
 ## 1.5 线程通信问题
 

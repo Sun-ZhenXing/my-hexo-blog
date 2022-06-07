@@ -104,19 +104,9 @@ theme: fluid
 deploy:
   type: ''
 
-# ADD
-math:
-  engine: katex
-  katex:
-    css: https://cdn.staticfile.org/KaTeX/0.10.2/katex.min.css
-    js: https://cdn.staticfile.org/KaTeX/0.10.2/katex.min.js
-    config:
-      throwOnError: false
-      errorColor: "#cc0000"
-      strict: false
-
 markdown_it_plus:
   plugins:
+    - markdown-it-checkbox
     - plugin:
       name: '@neilsustc/markdown-it-katex'
       enable: true
