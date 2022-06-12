@@ -1,0 +1,22 @@
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overflow-y: clip;
+}
+
+/* 超链接样式 */
+/* .markdown-body a {
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: blueviolet;
+    text-decoration-thickness: from-font;
+} */
+
+.note a {
+    color: var(--post-link-color);
+}
+
+/* 尾部的超链接 */
+.footer-content a {
+    color: var(--post-link-color);
+}

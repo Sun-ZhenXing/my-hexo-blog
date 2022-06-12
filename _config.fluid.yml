@@ -180,13 +180,13 @@ about:
   banner_img: https://pic.rmb.bdstatic.com/bjh/c5037424f200bcd116d67034abfb3425.jpeg
   icons:
     - { class: 'iconfont icon-github-fill', link: 'https://github.com/Sun-ZhenXing', tip: 'GitHub' }
-    - { class: 'iconfont icon-qq-fill', link: 'https://qm.qq.com/cgi-bin/qm/qr?k=OH4ueewx2AEPo-5taXFhdAZ671PsW_3t&noverify=0', tip: 'QQ' }
+    - { class: 'iconfont icon-qq-fill', tip: '1006925066' }
 
 # 自定义 CSS
 custom_css:
   # Mac 样式代码
   - /css/macpanel
-  - /css/katex-addon
+  - /css/addons
   - /css/code
 
 # 公式支持
@@ -268,7 +268,7 @@ footer:
 # # 解决 KaTeX 字体加载问题问题
 static_prefix:
   katex: https://cdn.staticfile.org/KaTeX/0.10.2/
-  mermaid: https://lib.baomitu.com/mermaid/9.1.1/
+  mermaid: https://lib.baomitu.com/mermaid/8.14.0/
 
 # 如果网站是 HTTPS 改为 true
 force_https: true

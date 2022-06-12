@@ -615,7 +615,306 @@ Thread.NORM_PRIORITY = 5;
 - 在多线程竞争下，加锁，释放锁会导致比较多的上下文切换和调度延时，引起性能问题
 - 如果一个优先级高的线程等待一个优先级低的线程释放锁，会导致优先级倒置，引起性能问题
 
+### 1.4.2 不安全的示例
 
+线程不安全的买票：
+
+```java
+public class UnsafeBuyTicket {
+    public static void main(String[] args) {
+        BuyTicket station = new BuyTicket();
+        new Thread(station, "Alex").start();
+        new Thread(station, "Bob").start();
+        new Thread(station, "Mike").start();
+    }
+}
+
+class BuyTicket implements Runnable {
+
+    private int ticket = 10;
+    boolean flag = true;
+
+    @Override
+    public void run() {
+        System.out.println("Buy ticket");
+        while (flag) {
+            try {
+                buyTicket();
+            } except (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void buyTicket() {
+        if (ticket > 0) {
+            Thread.sleep(1000);
+            System.out.println(Thread.currentThread().getName() + ": Buy ticket" + ticket--);
+        } else {
+            flag = false;
+            System.out.println("No ticket");
+        }
+    }
+}
+```
+
+不安全的取钱：
+
+```java
+public class UnsafeBank {
+    public static void main(String[] args) {
+        Account account = new Account(100, "基金");
+        Drawing alex = new Drawing(account, 50, "Alex");
+        Drawing bob = new Drawing(account, 100, "Bob");
+        alex.start();
+        bob.start();
+    }
+}
+
+class Account {
+    public int money;
+    public String name;
+
+    public Account(int money, String name) {
+        this.money = money;
+        this.name = name;
+    }
+}
+
+class Drawing extends Thread {
+    Account account;
+    int drawingMoney;
+    int currMoney;
+
+    public Drawing(Account account, int drawingMoney, int currMoney) {
+        this.account = account;
+        this.drawingMoney = drawingMoney;
+        this.currMoney = currMoney;
+    }
+
+    @Override
+    public void run() {
+        if (account.money - drawingMoney < 0) {
+            System.out.println("余额不足");
+            return;
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        account.money -= drawingMoney;
+        currMoney += drawingMoney;
+        System.out.println(account.name + ": 余额为" + account.money);
+        System.out.println(account.name + ": 当前余额为" + currMoney);
+    }
+}
+```
+
+不安全的集合类：
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class UnsafeList {
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            new Thread(() -> {
+                list.add(Thread.currentThread().getName());
+            }).start();
+        }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(list.size());
+    }
+}
+```
+
+### 1.4.3 同步方法和同步块
+
+关键字 `synchronized` 用于将方法或代码块修饰为线程同步的：
+
+```java
+public synchronized void method(int args) {
+}
+```
+
+`synchronized` 方法控制对象的访问，每个对象都有一把锁，每个 `synchronized` 方法都必须获得调用该方法的锁才能执行，否则线程会阻塞，方法一旦执行，就独占该锁，直到该方法返回才释放锁，后面被阻塞的线程才能获得这个锁，继续执行。
+
+缺陷是如果 `synchronized` 修饰一个大的方法会影响效率。
+
+线程安全的买票：
+
+```java
+public class UnsafeBuyTicket {
+    public static void main(String[] args) {
+        BuyTicket station = new BuyTicket();
+        new Thread(station, "Alex").start();
+        new Thread(station, "Bob").start();
+        new Thread(station, "Mike").start();
+    }
+}
+
+class BuyTicket implements Runnable {
+
+    private int ticket = 10;
+    boolean flag = true;
+
+    @Override
+    public void run() {
+        System.out.println("Buy ticket");
+        while (flag) {
+            try {
+                buyTicket();
+            } except (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized void buyTicket() {
+        if (ticket > 0) {
+            Thread.sleep(1000);
+            System.out.println(Thread.currentThread().getName() + ": Buy ticket" + ticket--);
+        } else {
+            flag = false;
+            System.out.println("No ticket");
+        }
+    }
+}
+```
+
+`synchronized` 默认将给 `this` 加锁，我们也可以监视其他对象：
+
+```java
+synchronized (obj) {
+}
+```
+
+同步监视器的执行过程：
+1. 第一个线程访问，锁定同步监视器，执行其中的代码
+2. 第二个线程访问，发现同步监视器被锁定，无法访问
+3. 第一个线程访问完毕，解锁同步监视器
+4. 第二个线程访问，发现同步监视器没有锁，然后锁定并访问
+
+安全的银行：
+
+```java
+public class UnsafeBank {
+    public static void main(String[] args) {
+        Account account = new Account(100, "基金");
+        Drawing alex = new Drawing(account, 50, "Alex");
+        Drawing bob = new Drawing(account, 100, "Bob");
+        alex.start();
+        bob.start();
+    }
+}
+
+class Account {
+    public int money;
+    public String name;
+
+    public Account(int money, String name) {
+        this.money = money;
+        this.name = name;
+    }
+}
+
+class Drawing extends Thread {
+    Account account;
+    int drawingMoney;
+    int currMoney;
+
+    public Drawing(Account account, int drawingMoney, int currMoney) {
+        this.account = account;
+        this.drawingMoney = drawingMoney;
+        this.currMoney = currMoney;
+    }
+
+    @Override
+    public void run() {
+        synchronized (account) {
+            if (account.money - drawingMoney < 0) {
+                System.out.println("余额不足");
+                return;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            account.money -= drawingMoney;
+            currMoney += drawingMoney;
+            System.out.println(account.name + ": 余额为" + account.money);
+            System.out.println(account.name + ": 当前余额为" + currMoney);
+        }
+    }
+}
+```
+
+线程安全的集合类：
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class UnsafeList {
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            new Thread(() -> {
+                synchronized (list) {
+                    list.add(Thread.currentThread().getName());
+                }
+            }).start();
+        }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(list.size());
+    }
+}
+```
+
+### 1.4.4 JUC 包
+
+JUC 包提供了许多线程安全的工具，例如线程安全的集合类：
+
+```java
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class UnsafeList {
+    public static void main(String[] args) {
+        CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < 10000; i++) {
+            new Thread(() -> {
+                list.add(Thread.currentThread().getName());
+            }).start();
+        }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(list.size());
+    }
+}
+```
+
+### 1.4.5 死锁
+
+多个线程各自占有一些共享资源，并且互相等待其他线程占有资源才能运行，而导致两个或多个线程都在等待对方释放资源，都停止执行的情形。某一个同步代码块同时拥有 “两个以上对象的锁” 时，就可能发生 “死锁” 问题。
+
+```java
+
+```
 
 ## 1.5 线程通信问题
 
