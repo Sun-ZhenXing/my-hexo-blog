@@ -1,9 +1,19 @@
+/* 代码块 */
 .highlight {
     background: #21252b;
     border-radius: 5px;
-    box-shadow: 0 5px 15px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 3px 8px 0 rgba(32, 18, 43, 0.2);
 }
 
+.markdown-body .highlight pre, .markdown-body pre {
+    padding: 0.6rem 0.8rem;
+}
+
+.collapse .gutter {
+    user-select: none;
+}
+
+/* Mac 风格的代码块 */
 .icon-code::before {
     background: #fc625d;
     border-radius: 50%;

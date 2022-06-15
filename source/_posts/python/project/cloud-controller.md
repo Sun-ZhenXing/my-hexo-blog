@@ -66,6 +66,12 @@ erDiagram
 
 创建数据库和表：
 
+<div class="note note-warning">
+
+注意：如果定义了数据模型则会使用数据模型，为了方便理解这里使用 SQL 定义。
+
+</div>
+
 ```sql
 CREATE DATABASE IF NOT EXISTS `controller`;
 USE `controller`;
@@ -101,6 +107,7 @@ CREATE TABLE `Port`(
 模型关系约束：
 - 相同 `availability_zone_hints` 下 `name` 不能重复
 - 同一个 Network 下的 `Subnet.cidr` 不能重复
+- 同一个子网下的 `ip` 不能重复，一般情况下 IP 由系统分配，不会重复
 - 所有的 `id` 一律使用 UUID，并作为主键
 - 网络的状态 `status` 只能是 `ACTIVE`（激活）、`INACTIVE`（未激活）或 `DISABLE`（禁用的）
 
@@ -134,8 +141,6 @@ CREATE TABLE `Port`(
 
 </div>
 
-## 2.2 接口设计
-
 ### 接口：`GET /v1/networks`
 
 -   内容：获取网络信息
@@ -150,7 +155,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -184,7 +189,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -216,7 +221,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -244,7 +249,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": null,
         "affected": 1
     }
@@ -272,7 +277,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -299,7 +304,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -327,27 +332,30 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
                 "name": "subnet001",
                 "network_id": "0008f705-d071-4cb9-ba69-eaf97560bd1a",
-                "cidr": "192.168.88.0/24",
-                "total_ip_number": 32,
-                "available_ip_number": 28,
-                "available_ips": [
-                    {
-                        "start": "192.168.88.1",
-                        "end": "192.168.88.25"
-                    },
-                    {
-                        "start": "192.168.88.28",
-                        "end": "192.168.88.32"
-                    }
-                ]
+                "cidr": "192.168.88.0/24"
             }
-        ]
+        ],
+        "available_ip": {
+            "total": 32,
+            "available": 28,
+            "ips": [
+                {
+                    "start": "192.168.88.1",
+                    "end": "192.168.88.25"
+                },
+                {
+                    "start": "192.168.88.28",
+                    "end": "192.168.88.32"
+                }
+            ],
+            "netmask": "255.255.255.0"
+        }
     }
     ```
 
@@ -373,7 +381,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "00da810c-ea63-0064-83e6-59a693de1066",
@@ -401,7 +409,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": null,
         "affected": 1
     }
@@ -409,7 +417,7 @@ CREATE TABLE `Port`(
 
 ### 接口：`PUT /v1/subnets/:id`
 
--   内容：修改一个子网的信息，修改时会重新分配此子网下的所有端口
+-   内容：修改一个子网的信息，修改 `cird` 时会重新分配此子网下的所有端口
 -   参数：  
     | 参数         | 含义       |
     | ------------ | ---------- |
@@ -429,21 +437,13 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "00da810c-ea63-0064-83e6-59a693de1066",
                 "name": "subnet002",
                 "network_id": "0008f705-d071-4cb9-ba69-eaf97560bd1a",
                 "cidr": "192.168.34.0/24"
-            }
-        ],
-        "affected_ports": [
-            {
-                "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
-                "name": "port001",
-                "subnet_id": "0008f705-d071-4cb9-ba69-eaf97560bd1a",
-                "ip": "192.168.88.3"
             }
         ]
     }
@@ -464,7 +464,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -486,7 +486,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -511,19 +511,19 @@ CREATE TABLE `Port`(
     ```json
     {
         "name": "port001",
-        "network_id": "00016ac-ea63-42d1-83e6-8394819effa8",
+        "subnet_id": "00016ac-ea63-42d1-83e6-8394819effa8"
     }
     ```
 -   返回示例  
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
                 "name": "port001",
-                "subnet_id": "0008f705-d071-4cb9-ba69-eaf97560bd1a",
+                "subnet_id": "00016ac-ea63-42d1-83e6-8394819effa8",
                 "ip": "192.168.88.3"
             }
         ]
@@ -540,7 +540,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": null,
         "affected": 1
     }
@@ -548,7 +548,7 @@ CREATE TABLE `Port`(
 
 ### 接口：`PUT /v1/ports/:id`
 
--   内容：修改一个端口的信息，系统将收回 IP 并重新分配
+-   内容：修改一个端口的信息，如果修改 `network_id` 那么系统将收回 IP 并重新分配
 -   参数：  
     | 参数        | 含义       |
     | ----------- | ---------- |
@@ -566,7 +566,7 @@ CREATE TABLE `Port`(
     ```json
     {
         "code": 0,
-        "error": "ok",
+        "msg": "ok",
         "data": [
             {
                 "id": "000006ac-ea63-4dd1-83e6-596e10a89366",
@@ -588,7 +588,7 @@ CREATE TABLE `Port`(
 flowchart TB
     Request --> URL("URL Patterns")
     subgraph " "
-        direction LR
+        directionLR
         URL --> Views("Views")
         Views --> Serializer("Serializer")
         Views --> Models("Models") <--> DB[("DataBase")]
@@ -792,6 +792,35 @@ urlpatterns = [
 ]
 ```
 
+<div class="note note-success">
+
+**如何匹配含有 UUID 路径？**
+
+`path()` 默认能接受下面几种参数：
+1. `str`：匹配除路径分隔符 `'/'` 之外的非空字符串
+2. `int`：匹配零或正整数
+3. `slug`：匹配由 ASCII 字母、数字、连字符、下划线字符组成的字符串，例如，`'building-your-1st-django-site'`
+4. `uuid`：匹配格式化的 UUID，如 `'075194d3-6885-417e-a8a8-6c931e272f00'`
+
+这里只需使用 `<uuid:id>` 即可。
+
+`path()` 也可以自定义参数匹配类型。此外，还有一种方法，可以在需要正则表达式的情况下使用：
+
+```python
+from django.urls import include, re_path
+
+urlpatterns = [
+    re_path(r'^index/$', views.index, name='index'),
+    re_path(r'^bio/(?P<username>\w+)/$', views.bio, name='bio'),
+    re_path(r'^blog/', include('blog.urls')),
+    ...
+]
+```
+
+`re_path()` 支持使用正则表达式来匹配。详情参考 [Django：`urls`](https://docs.djangoproject.com/en/4.0/ref/urls/) 。
+
+</div>
+
 把 APP 的路由添加到项目的 `urlpatterns` 中：
 
 ```python
@@ -931,7 +960,7 @@ netwox 24 -i 192.168.1.32/27
 
 # 附录 B：Python 计算可用 IP 信息
 
-那么 Python 如何计算 CIDR 的可用 IP 数和相关信息呢？这里仅讨论 IPv4
+那么 Python 如何计算 CIDR 的可用 IP 数和相关信息呢？这里仅讨论 IPv4 。
 
 对于标准库，Python 提供了 `ipaddress` 来计算 IP 信息：
 
@@ -949,12 +978,14 @@ print('所有可用 IP:', available_ips)
 print('广播地址:', network.broadcast_address)
 ```
 
-注意：可用地址数组内不包含网络的地址和广播地址，这里的广播地址是指掩码运算后的部分全为 `1` 的 IP 地址。
+注意：可用地址数组（即 `network.hosts()`）内 **不包含网络地址和广播地址**，这里的广播地址是指掩码运算后的部分全为 `1` 的 IP 地址。
 
 # 参考
 
-[1] CIDR（无类域间路由）是什么？，<http://c.biancheng.net/view/6409.html>
+[1] CIDR（无类域间路由）是什么，C 语言中文网，<http://c.biancheng.net/view/6409.html>
 
 [2] 手把手教你用 Django 实现 RESTful 接口，知乎，<https://zhuanlan.zhihu.com/p/356405945>
 
 [3] Django 知识库：UUID 作为模型主键，知乎，<https://zhuanlan.zhihu.com/p/139525123>
+
+[4] Django 知识库：`path()` 路径映射，知乎，<https://zhuanlan.zhihu.com/p/139523421>

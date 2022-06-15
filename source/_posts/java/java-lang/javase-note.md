@@ -15,6 +15,136 @@ tags:
 
 ## 1.1 如何学习 Java
 
+此处是 Java 全栈学习路线。
+
+<div class="note note-primary">
+
+**可以参考下面的资料**
+
+- [全栈学习路线](https://mp.weixin.qq.com/s?__biz=Mzg2NTAzMTExNg==&mid=2247483699&idx=1&sn=2dd9aeee040d24ad13fe4f2ce5104b05)
+- [SpringBoot 教程集合](https://mp.weixin.qq.com/mp/homepage?__biz=Mzg2NTAzMTExNg==&hid=1&sn=3247dca1433a891523d9e4176c90c499)
+- [JavaCore 文档集合](https://dunwu.github.io/javacore/)
+
+</div>
+
+### 1.1.1 Java SE 基础
+
+1. 计算机基础
+2. Java 入门学习
+3. Java 基础语法
+4. 流程控制方法
+5. 数组
+6. OOP
+7. 异常
+8. 常用类
+9. 集合框架
+10. I/O
+11. 多线程
+12. GUI 编程
+13. 网络编程
+14. 注解和反射
+15. JUC 编程
+16. JVM
+17. 23 种设计模式
+18. 数据结构和算法
+19. 正则表达式
+
+### 1.1.2 JavaWeb
+
+1. MySQL
+2. JDBC
+3. HTML
+4. CSS
+5. JavaScript
+6. jQuery
+7. BootStrap
+8. HTTP 协议
+9. Tomcat
+10. Service
+11. Cookie & Session
+12. JSP
+13. JSTL & EL 表达式
+14. MVC 架构
+15. 过滤器
+16. 监听器
+17. 文件上传下载
+18. 邮件收发
+19. 富文本编辑器
+
+### 1.1.3 SSM
+
+1. Maven
+2. Junit
+3. Log4j
+4. MyBatis
+5. Spring
+6. SpringMVC
+7. JSON
+8. Ajax
+9. SSM 框架
+10. Shiro
+11. Solr
+12. Git
+13. MyBatis-Plus
+14. MySQL 高级
+15. Netty
+16. MyCat
+
+### 1.1.4 Linux
+
+1. Linux 基础
+2. Shell 编程
+3. Linux 系统管理
+4. Linux 网络
+5. LAMP 部署
+6. LNMP 部署
+7. Nginx
+8. ELK 日志分析
+9. MySQL 集群
+10. Redis
+11. Linux 集群
+12. Docker
+13. OpenStack
+14. Kubernets
+
+### 1.1.5 微服务和分布式
+
+1. Vue
+2. Node.js
+3. SpringBoot
+4. SpringBoot Web 开发
+5. SpringData
+6. SpringSecurity
+7. SpringBoot 分布式开发
+8. ActiveMQ / RabbitMQ / RocketMQ / Kafka
+9. ElsticSearch
+10. Dobbo / Zookeeper
+11. SpringCloud Netflix 全家桶
+12. SpringCloud Alibaba 全家桶
+
+### 1.1.6 大数据开发
+
+1. 负载均衡
+2. Hadoop
+3. Hive
+4. HBase
+5. Flume
+6. Sqoop
+7. Zookeeper
+8. Impala
+9. Scale 编程
+10. Spark 系列
+11. Kafka
+
+### 1.1.7 持续学习
+
+1. Java 8-17 新特征
+2. Service Mesh
+3. 计算机网络原理
+4. 操作系统
+5. Go Web
+
+
 由于笔记作者在此前就熟悉狂神所说的上述技术，包括：
 - 计算机体系结构
 - 软件和软件开发
@@ -27,7 +157,7 @@ tags:
 
 <div class="note note-success">
 
-这个博客网站（<http://blog.alexsun.top/>）也是在狂神的启发下构建的，如果需要了解详细的构建信息，可以参考我的博客 [*hexo fluid 博客配置指南*](http://blog.alexsun.top/2022/05/20/hello-world/) 。
+这个博客网站（<http://blog.alexsun.top/>）也是在狂神的启发下构建的，如果需要了解详细的构建信息，可以参考我的博客 [hexo fluid 博客配置指南](http://blog.alexsun.top/2022/05/20/hello-world/) 。
 
 </div>
 

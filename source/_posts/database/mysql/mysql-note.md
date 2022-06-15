@@ -15,7 +15,7 @@ tags:
 
 <div class="note note-success">
 
-作者的文档可以在微信公众号查看，[*作者的文档*](http://mp.weixin.qq.com/mp/homepage?__biz=Mzg2NTAzMTExNg==&hid=4&sn=044c8767bd3c1825a329c2b98fff2ffe) 也可以参考。
+作者的文档可以在微信公众号查看，[作者的文档](http://mp.weixin.qq.com/mp/homepage?__biz=Mzg2NTAzMTExNg==&hid=4&sn=044c8767bd3c1825a329c2b98fff2ffe) 也可以参考。
 
 </div>
 
@@ -768,6 +768,21 @@ SELECT a.categoryName AS '父栏目', b.categoryName AS '子栏目'
     WHERE a.categoryid = b.pid;
 ```
 
+<div class="note note-success">
+
+[LeetCode：181. 超过经理收入的员工](https://leetcode.cn/problems/employees-earning-more-than-their-managers/)
+
+此题可以使用自连接实现，参考代码：
+
+```sql
+select E1.name as Employee from Employee as E1
+left join Employee as E2
+on E1.managerId = E2.id
+where E1.salary > E2.salary;
+```
+
+</div>
+
 ## 4.7 分页和排序
 
 SQL `SELECT` 完整语法如下，其中各个子句的位置不能调换：
@@ -873,6 +888,19 @@ SELECT studentno,studentname FROM student WHERE studentno IN (
     )
 )
 ```
+
+<div class="note note-success">
+
+[LeetCode：176. 第二高的薪水](https://leetcode.cn/problems/second-highest-salary/)
+
+此题可以使用子查询，参考代码：
+
+```sql
+select max(salary) as SecondHighestSalary from Employee
+where salary < (select max(salary) from Employee);
+```
+
+</div>
 
 # 5. MySQL 常用函数
 

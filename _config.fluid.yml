@@ -268,7 +268,7 @@ footer:
 # # 解决 KaTeX 字体加载问题问题
 static_prefix:
   katex: https://cdn.staticfile.org/KaTeX/0.10.2/
-  mermaid: https://lib.baomitu.com/mermaid/8.14.0/
+  mermaid: https://lib.baomitu.com/mermaid/9.1.1/
 
 # 如果网站是 HTTPS 改为 true
 force_https: true

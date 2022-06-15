@@ -3,8 +3,9 @@ title: 学习使用 Mermaid
 date: 2022-05-28 09:54:57
 mermaid: true
 categories:
-  - [Markdown, Mermaid]
+  - [MarkDown, Mermaid]
 tags:
+  - MarkDown
   - Mermaid
   - 元定义
 ---
