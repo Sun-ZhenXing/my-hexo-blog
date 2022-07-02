@@ -8,6 +8,7 @@ tags:
   - Python
   - 课程设计
   - 云控制器
+  - Django
 ---
 
 本文介绍 Python 课程设计的设计过程和具体实现。
@@ -588,7 +589,7 @@ CREATE TABLE `Port`(
 flowchart TB
     Request --> URL("URL Patterns")
     subgraph " "
-        directionLR
+        direction LR
         URL --> Views("Views")
         Views --> Serializer("Serializer")
         Views --> Models("Models") <--> DB[("DataBase")]
@@ -637,33 +638,39 @@ python manage.py startapp netcontroller
 
 和上面步骤一样，将 `'netcontroller.apps.NetcontrollerConfig'` 加入到 `INSTALLED_APPS` 配置中。
 
+可以将时区和语言改为中文、北京时间，修改 `controller/settings.py` 下的配置：
+
+```python
+LANGUAGE_CODE = 'zh-hans'
+
+TIME_ZONE = 'Asia/Shanghai'
+```
+
 ## 3.3 定义模型
 
-在 `tutorials/models.py` 中添加 `Tutorial` 类：
+在 `netcontroller/models.py` 中添加 `Network` 类：
 
 ```python
 import uuid
 
 from django.db import models
 
-
 class Network(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64)
-    available_zone_hints = models.CharField(max_length=32)
-    status = models.CharField(max_length=32)
+    availability_zone_hints = models.CharField(max_length=32)
+    status = models.CharField(max_length=32, default='INACTIVE')
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['available_zone_hints', 'name'],
+                fields=['availability_zone_hints', 'name'],
                 name='zone_name_unique'
             )
         ]
 
     def __str__(self):
         return self.name
-
 
 class Subnet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -679,9 +686,11 @@ class Subnet(models.Model):
             )
         ]
 
-    def __str__(self):
-        return self.name
-
+    def __str__(self) -> str:
+        return 'Port<{}: {}>'.format(
+            self.name,
+            self.cidr
+        )
 
 class Port(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -690,8 +699,19 @@ class Port(models.Model):
     ip = models.CharField(max_length=50)
     subnet_id = models.ForeignKey(Subnet, on_delete=models.CASCADE)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ip', 'subnet_id'],
+                name='ip_subnet_id_unique'
+            )
+        ]
+
     def __str__(self) -> str:
-        return self.name
+        return 'Port<{}: {}>'.format(
+            self.name,
+            self.ip
+        )
 ```
 
 然后执行数据迁移：
@@ -742,35 +762,46 @@ from rest_framework import serializers
 
 from .models import Network, Port, Subnet
 
-
-def json_response(data, code=0, error='ok', **kwargs):
-    '''
+def json_success(data, error_msg='ok', status=200, **kwargs):
+    """
     将数据序列化为 JSON 格式，并返回
-    @param `data`: `dict` or `list`
-    @param `code`: `int`
-    @param `error`: `str`
+    @param `data`: 可序列化的对象
+    @param `error_msg`: `str` 错误信息
     @return: `HttpResponse`
-    '''
+    """
     res_data = {
-        'code': code,
-        'error': error,
+        'code': 0,
+        'msg': error_msg,
         'data': data,
         **kwargs
     }
-    return JsonResponse(res_data, status=200, safe=False)
+    return JsonResponse(res_data, status=status, safe=False)
 
+def json_error(data=None, code=1, error_msg='error', status=400, **kwargs):
+    """
+    将错误信息序列化为 JSON 格式，并返回
+    @param `code`: `int` 错误代码
+    @param `error_msg`: `str` 错误信息
+    @param `status`: `int` 状态码
+    @return: `HttpResponse`
+    """
+    res_data = {
+        'code': code,
+        'msg': error_msg,
+        'data': data,
+        **kwargs
+    }
+    return JsonResponse(res_data, status=status, safe=False)
 
 class NetworkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Network
         fields = '__all__'
 
-
 class SubnetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subnet
         fields = '__all__'
-
 
 class PortSerializer(serializers.ModelSerializer):
     class Meta:
@@ -786,9 +817,12 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('networks/', views.networks, name='networks'),
-    path('subnets/', views.subnets, name='subnets'),
-    path('ports/', views.ports, name='ports'),
+    path('v1/networks/', views.networks, name='networks'),
+    path('v1/networks/<uuid:uuid>/', views.network_id, name='network_id'),
+    path('v1/subnets/', views.subnets, name='subnets'),
+    path('v1/subnets/<uuid:uuid>/', views.subnet_id, name='subnet_id'),
+    path('v1/ports/', views.ports, name='ports'),
+    path('v1/ports/<uuid:uuid>/', views.port_id, name='port_id'),
 ]
 ```
 
@@ -831,6 +865,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('netcontroller.urls')),
 ]
+
+page404 = 'netcontroller.views.global_404'
+page500 = 'netcontroller.views.global_500'
+handler404 = page404
+handler500 = page500
 ```
 
 ## 3.5 编写 API 视图
@@ -838,62 +877,303 @@ urlpatterns = [
 编写 `netcontroller/views.py`：
 
 ```python
+from django.db import models
 from django.http import HttpRequest, HttpResponse
-from django.http.response import JsonResponse
-from rest_framework import status
+from django.views import View
+from rest_framework import serializers, status
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 
 from .models import Network, Port, Subnet
 from .serializers import (NetworkSerializer, PortSerializer, SubnetSerializer,
-                          json_response)
-
+                          json_error, json_success)
+from .utils import allocate_ip, allocate_ip_many, compute_ips, valid_cidr
 
 @api_view(['GET'])
 def index(request: HttpRequest) -> HttpResponse:
-    return JsonResponse({
-        'code': 0,
-        'error': 'Hello World!',
-        'data': request.GET
-    })
+    """ 测试接口 """
+    return json_success(request.GET, 'Hello, World!')
+
+def basic_view_factory(model: type[models.Model], serializer: type[serializers.Serializer]):
+    """
+    基础视图工厂，支持 `GET`、`POST`
+    @param `model`: 模型类
+    @param `serializer`: 序列化类
+
+    视图工厂使用闭包机制复用代码
+    """
+
+    class _C(View):
+        """
+        基础视图
+        """
+
+        def http_method_not_allowed(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+            return json_error(
+                error_msg='405 METHOD_NOT_ALLOWED',
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
+
+        def get(self, request: HttpRequest):
+            limit = request.GET.get('limit', None)
+            offset = request.GET.get('offset', None)
+            network_id = request.GET.get('network_id', None)
+            subnet_id = request.GET.get('subnet_id', None)
+            query = model.objects
+            if model == Subnet:
+                if network_id is not None:
+                    query = query.filter(network_id=network_id)
+            elif model == Port:
+                if subnet_id is not None:
+                    query = query.filter(subnet_id=subnet_id)
+            if offset is None:
+                offset = 0
+            if limit is None:
+                curr_model = query.all()[int(offset):]
+            else:
+                curr_model = query.values()[int(offset):int(limit)]
+            ser = serializer(curr_model, many=True)
+            return json_success(ser.data)
+
+        def post(self, request: HttpRequest):
+            data = JSONParser().parse(request)
+            ser = serializer(data=data)
+            # CIDR 验证器
+            if model == Subnet:
+                if not valid_cidr(data['cidr']):
+                    return json_error(error_msg='Invalid CIDR')
+            # Port 下分配 IP
+            if model == Port:
+                cidr = Subnet.objects.get(id=data['subnet_id']).cidr
+                allocated_ips = (
+                    x.ip for x in Port.objects.filter(subnet_id=data['subnet_id'])
+                )
+                ip = allocate_ip(cidr, allocated_ips)
+                if not ip:
+                    return json_error(error_msg='IP 地址已被分配完')
+                else:
+                    data['ip'] = ip
+            if ser.is_valid():
+                try:
+                    ser.save()
+                except:
+                    return json_error(error_msg='数据重复或异常，不满足约束，无法创建')
+                return json_success(ser.data, status=status.HTTP_201_CREATED)
+            return json_error(ser.errors)
+
+    return _C
+
+def include_id_factory(model: type[models.Model], serializer: type[serializers.Serializer]):
+    """
+    视图工厂，支持使用 ID 获取对象
+    @param `model`: 模型类
+    @param `serializer`: 序列化类
+
+    视图工厂使用闭包机制复用代码
+    """
+
+    class _C(View):
+        """
+        包含 ID 的请求视图
+        """
+
+        def _get_query_model(self, model_id: str):
+            """
+            获取查询模型
+            """
+            query_model = model.objects.filter(id=model_id)
+            if not query_model:
+                return json_error(
+                    error_msg='404 NOT_FOUND',
+                    status=status.HTTP_404_NOT_FOUND
+                ), None
+            return query_model, query_model.first()
+
+        def get(self, request: HttpRequest, **kwargs):
+            model_id = kwargs.get('uuid', None)
+            query_model, curr_model = self._get_query_model(model_id)
+            if curr_model is None:
+                return query_model
+            ser = serializer(query_model, many=True)
+            # 如果是子网，还需要计算有多少可用地址
+            if model == Subnet:
+                occupied = (
+                    port.ip for port in Port.objects.filter(subnet_id=curr_model.id)
+                )
+                return json_success(
+                    ser.data,
+                    available_ip=compute_ips(curr_model.cidr, occupied)
+                )
+            return json_success(ser.data)
+
+        def put(self, request: HttpRequest, **kwargs):
+            model_id = kwargs.get('uuid', None)
+            query_model, curr_model = self._get_query_model(model_id)
+            if curr_model is None:
+                return query_model
+            data = JSONParser().parse(request)
+            # 子网
+            if model == Subnet:
+                if not valid_cidr(data['cidr']):
+                    return json_error(error_msg='Invalid CIDR')
+                # 如果更改了 CIDR，需要重新分配 IP
+                # ========================================================
+                # 注意此处需要事务一致性，修改时不可以并发写入
+                # ========================================================
+                if curr_model.cidr != data['cidr']:
+                    occupied_number = Port.objects.filter(subnet_id=curr_model.id).count()
+                    new_cird_number = compute_ips(data['cidr'], [])['available']
+                    if new_cird_number < occupied_number:
+                        return json_error(error_msg='无法满足 Port 的 IP 分配')
+                    else:
+                        ip_pool = allocate_ip_many(data['cidr'], new_cird_number)
+                        # 重新分配 IP
+                        for ip, port in zip(ip_pool, Port.objects.filter(subnet_id=curr_model.id)):
+                            port.ip = ip
+                            port.save()
+            # Port
+            if model == Port:
+                # 当 subnet_id 改变时重新分配 IP
+                if curr_model.subnet_id != data['subnet_id']:
+                    cidr = Subnet.objects.get(id=data['subnet_id']).cidr
+                    allocated_ips = (
+                        x.ip for x in Port.objects.filter(subnet_id=data['subnet_id'])
+                    )
+                    ip = allocate_ip(cidr, allocated_ips)
+                    if not ip:
+                        return json_error(error_msg='IP 地址已被分配完')
+                    else:
+                        data['ip'] = ip
+            ser = serializer(curr_model, data=data)
+            if ser.is_valid():
+                ser.save()
+                return json_success(ser.data)
+            return json_error(ser.errors)
+
+        def delete(self, request: HttpRequest, **kwargs):
+            model_id = kwargs.get('uuid', None)
+            query_model, curr_model = self._get_query_model(model_id)
+            if curr_model is None:
+                return query_model
+            affected_lines = curr_model.delete()[0]
+            return json_success(None, affected=affected_lines)
+
+    return _C
+
+def global_404(request: HttpRequest, exception) -> HttpResponse:
+    """
+    全局 404 页面
+    """
+    return json_error(
+        error_msg='404 NOT_FOUND',
+        status=status.HTTP_404_NOT_FOUND
+    )
+
+def global_500(request: HttpRequest) -> HttpResponse:
+    """
+    全局 500 页面
+    """
+    return json_error(
+        error_msg='500 INTERNAL_SERVER_ERROR',
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
+
+networks = basic_view_factory(Network, NetworkSerializer).as_view()
+subnets = basic_view_factory(Subnet, SubnetSerializer).as_view()
+ports = basic_view_factory(Port, PortSerializer).as_view()
+network_id = include_id_factory(Network, NetworkSerializer).as_view()
+subnet_id = include_id_factory(Subnet, SubnetSerializer).as_view()
+port_id = include_id_factory(Port, PortSerializer).as_view()
+```
+
+最后是分配 IP 和检查 IP 地址的算法，在 `netcontroller/utils.py` 下面：
+
+```python
+import ipaddress
+from typing import Iterable
 
 
-@api_view(['GET', 'POST', 'DELETE', 'PUT'])
-def networks(request: HttpRequest) -> HttpResponse:
-    if request.method == 'GET':
-        limit = request.GET.get('limit', None)
-        offset = request.GET.get('offset', None)
-        
-        networks = Network.objects.all()
-        serializer = NetworkSerializer(networks, many=True)
-        return json_response(serializer.data)
-
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = NetworkSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        pass
-    elif request.method == 'PUT':
-        pass
+def allocate_ip(cidr: str, allocated_ips: Iterable[str]):
+    """
+    通过 CIDR 分配 IP 地址
+    """
+    allocated_ips_set = set(allocated_ips)
+    ip_network = ipaddress.ip_network(cidr)
+    for ip in ip_network.hosts():
+        if ip.compressed not in allocated_ips_set:
+            return ip.compressed
+    return ''
 
 
-@api_view(['GET', 'POST', 'DELETE', 'PUT'])
-def subnets(request: HttpRequest) -> HttpResponse:
-    if request.method == 'GET':
-        limit = request.GET.get('limit', None)
-        offset = request.GET.get('offset', None)
+def allocate_ip_many(cidr: str, n: int) -> Iterable[str]:
+    """
+    通过 CIDR 分配多个 IP 地址
+    """
+    ip_network = ipaddress.ip_network(cidr)
+    return (
+        (ip_network.network_address + x).compressed
+        for x in range(1, n + 1)
+    )
 
 
-@api_view(['GET', 'POST', 'DELETE', 'PUT'])
-def ports(request: HttpRequest) -> HttpResponse:
-    if request.method == 'GET':
-        limit = request.GET.get('limit', None)
-        offset = request.GET.get('offset', None)
+def compute_ips(cidr: str, occupied: Iterable[str]):
+    """
+    计算子网可用信息
+    """
+    ip_network = ipaddress.ip_network(cidr)
+    total = ip_network.num_addresses
+    occupied_set = set(occupied)
+    # 不包括广播地址和网络地址
+    available = total - len(occupied_set) - 2
+    ips = list[dict[str, str]]()
+    flag = False
+    start = ''
+    for x in range(1, total + 1):
+        curr = ip_network.network_address + x
+        if curr.compressed not in occupied_set:
+            if not flag:
+                start = curr.compressed
+                flag = True
+        else:
+            if flag:
+                ips.append({
+                    'start': start,
+                    'end': (curr - 1).compressed
+                })
+                flag = False
+    if flag:
+        ips.append({
+            'start': start,
+            'end': (ip_network.broadcast_address - 1).compressed
+        })
+    return {
+        'total': total,
+        'available': available,
+        'ips': ips,
+        'netmask': ip_network.netmask.compressed
+    }
+
+
+def valid_cidr(cidr: str) -> bool:
+    """
+    检查 CIDR 是否合法
+    """
+    try:
+        network = ipaddress.ip_network(cidr, strict=False)
+        return bool(network)
+    except ValueError:
+        return False
+
+
+def valid_ip(ip: str) -> bool:
+    """
+    检查 IP 是否合法
+    """
+    try:
+        ip_address = ipaddress.ip_address(ip)
+        return bool(ip_address)
+    except ValueError:
+        return False
 ```
 
 <div class="note note-warning">

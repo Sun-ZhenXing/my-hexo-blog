@@ -7,6 +7,7 @@ categories:
 tags:
   - Python
   - Web 开发
+  - Django
 ---
 
 由于课程作业需要，简单入门 Django 学习开发，这是一篇入门笔记。

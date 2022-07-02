@@ -6,7 +6,6 @@ categories:
   - [MarkDown]
 tags:
   - MarkDown
-  - 元定义
 ---
 
 本文是 MarkDown 技巧的介绍和基本规范定义。
