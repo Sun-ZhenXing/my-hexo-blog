@@ -271,4 +271,4 @@ static_prefix:
   mermaid: https://lib.baomitu.com/mermaid/9.1.1/
 
 # 如果网站是 HTTPS 改为 true
-force_https: true
+force_https: false

@@ -9,7 +9,7 @@ tags:
   - Mermaid
 ---
 
-[Mermaid](https://github.com/mermaid-js/mermaid/blob/HEAD/README.zh-CN.md) 是用于在 MarkDown 中生成图标的 JS 库，本文是 Mermaid 的基本语法介绍，还包含了如何在 Hexo Fluid 主题内配置 Mermaid 的一份指南。
+[Mermaid](https://github.com/mermaid-js/mermaid/blob/HEAD/README.zh-CN.md) 是用于在 MarkDown 中生成图表的 JS 库，本文是 Mermaid 的基本语法介绍，还包含了如何在 Hexo Fluid 主题内配置 Mermaid 的一份指南。
 
 <!-- more -->
 
